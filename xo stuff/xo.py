@@ -111,8 +111,7 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 1)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1),
-                                           self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 1
