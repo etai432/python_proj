@@ -95,70 +95,111 @@ a tie happened 100.0% of the time
 random first move, without using alfa:
 
 1st generation (random)
-player x won: 58.541%
-player o won: 28.682%
-a tie happened 12.777% of the time
+player x won: 58.294%
+player o won: 29.027%
+a tie happened 12.679% of the time
 generation: 2 random: 0%
-player x won: 0.102%
-player o won: 0.262%
-a tie happened 99.636% of the time
+player x won: 0.063%
+player o won: 0.211%
+a tie happened 99.726% of the time
 generation: 3 random: 0%
-player x won: 0.004%
-player o won: 0.054%
-a tie happened 99.942% of the time
+player x won: 0.007%
+player o won: 0.045%
+a tie happened 99.948% of the time
 generation: 4 random: 0%
-player x won: 0.001%
-player o won: 0.041%
-a tie happened 99.958% of the time
+player x won: 0.014%
+player o won: 0.02%
+a tie happened 99.966% of the time
 generation: 5 random: 0%
-player x won: 0.001%
-player o won: 0.019%
-a tie happened 99.98% of the time
+player x won: 0.003%
+player o won: 0.012%
+a tie happened 99.985% of the time
 generation: 6 random: 0%
 player x won: 0.0%
-player o won: 0.008%
-a tie happened 99.992% of the time
+player o won: 0.005%
+a tie happened 99.995% of the time
 generation: 7 random: 0%
-player x won: 0.0%
-player o won: 0.007%
-a tie happened 99.993% of the time
+player x won: 0.002%
+player o won: 0.008%
+a tie happened 99.99% of the time
 generation: 8 random: 0%
-player x won: 0.0%
-player o won: 0.006%
-a tie happened 99.994% of the time
+player x won: 0.002%
+player o won: 0.009%
+a tie happened 99.989% of the time
 generation: 9 random: 0%
-player x won: 0.001%
-player o won: 0.003%
-a tie happened 99.996% of the time
+player x won: 0.0%
+player o won: 0.005%
+a tie happened 99.995% of the time
 generation: 10 random: 0%
+player x won: 0.0%
+player o won: 0.003%
+a tie happened 99.997% of the time
+generation: 11 random: 0%
 player x won: 0.001%
 player o won: 0.003%
 a tie happened 99.996% of the time
-generation: 11 random: 0%
+generation: 12 random: 0%
+player x won: 0.0%
+player o won: 0.003%
+a tie happened 99.997% of the time
+generation: 13 random: 0%
+player x won: 0.001%
+player o won: 0.001%
+a tie happened 99.998% of the time
+generation: 14 random: 0%
 player x won: 0.0%
 player o won: 0.002%
 a tie happened 99.998% of the time
-generation: 12 random: 0%
-player x won: 0.0%
-player o won: 0.001%
-a tie happened 99.999% of the time
-generation: 13 random: 0%
-player x won: 0.001%
-player o won: 0.002%
-a tie happened 99.997% of the time
-generation: 14 random: 0%
-player x won: 0.0%
-player o won: 0.003%
-a tie happened 99.997% of the time
 generation: 15 random: 0%
-player x won: 0.0%
-player o won: 0.001%
-a tie happened 99.999% of the time
-generation: 16 random: 0%
-player x won: 0.0%
-player o won: 0.001%
-a tie happened 99.999% of the time
-generation: 17 random: 0%
 player x won: 0.0%
 player o won: 0.0%
 a tie happened 100.0% of the time
+
+decreasing alfa, random first turn:
+1st generation (random)
+player x won: 58.386%
+player o won: 28.978%
+a tie happened 12.636% of the time
+generation: 2 random: 18%
+player x won: 28.981%
+player o won: 17.984%
+a tie happened 53.035% of the time
+generation: 3 random: 16%
+player x won: 27.122%
+player o won: 16.535%
+a tie happened 56.343% of the time
+generation: 4 random: 14%
+player x won: 24.59%
+player o won: 15.065%
+a tie happened 60.345% of the time
+generation: 5 random: 12%
+player x won: 21.995%
+player o won: 13.185%
+a tie happened 64.82% of the time
+generation: 6 random: 10%
+player x won: 18.882%
+player o won: 11.572%
+a tie happened 69.546% of the time
+generation: 7 random: 8%
+player x won: 15.919%
+player o won: 9.606%
+a tie happened 74.475% of the time
+generation: 8 random: 6%
+player x won: 12.323%
+player o won: 7.511%
+a tie happened 80.166% of the time
+generation: 9 random: 4%
+player x won: 8.447%
+player o won: 5.098%
+a tie happened 86.455% of the time
+generation: 10 random: 2%
+player x won: 4.396%
+player o won: 2.712%
+a tie happened 92.892% of the time
+generation: 11 random: 0%
+player x won: 0.0%
+player o won: 0.0%
+a tie happened 100.0% of the time
+
+
+result: decreasing alfa with random first turn gives the best playing ai, in the least amount of games.

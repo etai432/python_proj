@@ -64,7 +64,10 @@ class TicTacToe:
         turns = 0
         while True:
             turn = 2
-            last_index = int(self.choose_next_turn(2) - 1)
+            if turns == 0:
+                last_index = random.randint(1, 9) - 1
+            else:
+                last_index = self.choose_next_turn(2) - 1
             self.board[last_index] = 2
             turns += 1
             self.print_board()
@@ -159,7 +162,7 @@ class TicTacToe:
         for j in range(9):
             turn = 2
             if turns == 0:
-                last_index = self.computer_turn() - 1
+                last_index = random.randint(1, 9) - 1
             else:
                 last_index = self.choose_next_turn(2) - 1
             self.board[last_index] = 2
@@ -214,9 +217,8 @@ class TicTacToe:
         print("player o won: " + str(wins2 / 1000) + "%")
         print("a tie happened " + str(ties / 1000) + "% of the time")
         j = 0
-        self.alfa = 0
         while ties != 100000:
-            # self.alfa -= 2
+            self.alfa -= 2
             wins1 = 0
             wins2 = 0
             ties = 0
