@@ -29,7 +29,7 @@ def main():
                 errors += 1
         print("you got " + str(correct - start) + " words this round, " + str(length - correct) + " left!")
     print("you had " + str(errors) + " errors")
-
+    #test
 
 if __name__ == '__main__':
     main()
