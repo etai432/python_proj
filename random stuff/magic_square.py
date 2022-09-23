@@ -6,14 +6,14 @@ def is_magic_square(square):
     sum2 = np.sum(square, axis=0)
     sum3 = np.sum(square, axis=1)
     for i in sum2:
-        if not i == sum1:
+        if i != sum1:
             return False
     for i in sum3:
-        if not i == sum1:
+        if i != sum1:
             return False
-    if not np.sum(np.diag(square)) == sum1:
+    if np.sum(np.diag(square)) != sum1:
         return False
-    if not np.sum(np.fliplr(square).diagonal()) == sum1:
+    if np.sum(np.fliplr(square).diagonal()) != sum1:
         return False
     return True
 
