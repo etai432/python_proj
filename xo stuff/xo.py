@@ -32,10 +32,6 @@ class TicTacToe:
         self.empty_space()
         return random.choice(self.empty)
 
-    def computer2_turn(self):
-        self.empty_space()
-        return random.choice(self.empty)
-
     def player_turn(self):
         self.empty_space()
         input1 = int(input("please pick a spot from the empty spaces: "))
@@ -97,21 +93,20 @@ class TicTacToe:
         self.restart_board()
         game_boards = []
         turns = 0
-        for j in range(9):
+        for _ in range(9):
             turn = 2
             last_index = self.computer_turn() - 1
             self.board[last_index] = 2
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4:
-                if self.check_win(last_index, turn) == 2:
-                    game_boards = self.rate_boards(game_boards, 2)
-                    for i in game_boards:
-                        if i[0] in self.dict:
-                            self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
-                        else:
-                            self.dict[i[0]] = (i[1], 1)
-                    return 2
+            if turns > 4 and self.check_win(last_index, turn) == 2:
+                game_boards = self.rate_boards(game_boards, 2)
+                for i in game_boards:
+                    if i[0] in self.dict:
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                    else:
+                        self.dict[i[0]] = (i[1], 1)
+                return 2
             if turns == 9:
                 game_boards = self.rate_boards(game_boards, 1)
                 for i in game_boards:
@@ -121,19 +116,18 @@ class TicTacToe:
                         self.dict[i[0]] = (i[1], 1)
                 return 1
             turn = 1
-            last_index = self.computer2_turn() - 1
+            last_index = self.computer_turn() - 1
             self.board[last_index] = 0
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4:
-                if self.check_win(last_index, turn) == 1:
-                    game_boards = self.rate_boards(game_boards, 0)
-                    for i in game_boards:
-                        if i[0] in self.dict:
-                            self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
-                        else:
-                            self.dict[i[0]] = (i[1], 1)
-                    return 0
+            if turns > 4 and self.check_win(last_index, turn) == 1:
+                game_boards = self.rate_boards(game_boards, 0)
+                for i in game_boards:
+                    if i[0] in self.dict:
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                    else:
+                        self.dict[i[0]] = (i[1], 1)
+                return 0
 
     def choose_next_turn(self, player):
         if random.randint(1, 100) <= self.alfa:
@@ -163,7 +157,7 @@ class TicTacToe:
         self.restart_board()
         game_boards = []
         turns = 0
-        for j in range(9):
+        for _ in range(9):
             turn = 2
             if turns == 0:
                 last_index = random.randint(1, 9) - 1
@@ -172,15 +166,14 @@ class TicTacToe:
             self.board[last_index] = 2
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4:
-                if self.check_win(last_index, turn) == 2:
-                    game_boards = self.rate_boards(game_boards, 2)
-                    for i in game_boards:
-                        if i[0] in self.dict:
-                            self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
-                        else:
-                            self.dict[i[0]] = (i[1], 1)
-                    return 2
+            if turns > 4 and self.check_win(last_index, turn) == 2:
+                game_boards = self.rate_boards(game_boards, 2)
+                for i in game_boards:
+                    if i[0] in self.dict:
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                    else:
+                        self.dict[i[0]] = (i[1], 1)
+                return 2
             if turns == 9:
                 game_boards = self.rate_boards(game_boards, 1)
                 for i in game_boards:
@@ -194,21 +187,20 @@ class TicTacToe:
             self.board[last_index] = 0
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4:
-                if self.check_win(last_index, turn) == 1:
-                    game_boards = self.rate_boards(game_boards, 0)
-                    for i in game_boards:
-                        if i[0] in self.dict:
-                            self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
-                        else:
-                            self.dict[i[0]] = (i[1], 1)
-                    return 0
+            if turns > 4 and self.check_win(last_index, turn) == 1:
+                game_boards = self.rate_boards(game_boards, 0)
+                for i in game_boards:
+                    if i[0] in self.dict:
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                    else:
+                        self.dict[i[0]] = (i[1], 1)
+                return 0
 
     def run_games(self):
         wins1 = 0
         wins2 = 0
         ties = 0
-        for i in range(100000):
+        for _ in range(100000):
             winner = self.play_one_game_computer()
             if winner == 2:
                 wins1 += 1
