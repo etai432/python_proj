@@ -241,7 +241,6 @@ def main():
     game.play_one_game()
     game.play_one_game()
     game.play_one_game()
-    #test
 
 
 if __name__ == "__main__":
