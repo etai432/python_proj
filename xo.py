@@ -158,7 +158,10 @@ class TicTacToe:
         turns = 0
         for j in range(9):
             turn = 2
-            last_index = self.choose_next_turn(2) - 1
+            if turns == 0:
+                last_index = self.computer_turn() - 1
+            else:
+                last_index = self.choose_next_turn(2) - 1
             self.board[last_index] = 2
             turns += 1
             game_boards.append(self.board[:])
@@ -210,39 +213,26 @@ class TicTacToe:
         print("player x won: " + str(wins1 / 1000) + "%")
         print("player o won: " + str(wins2 / 1000) + "%")
         print("a tie happened " + str(ties / 1000) + "% of the time")
-        # for j in range(0):
-        #     self.alfa -= 2
-        #     wins1 = 0
-        #     wins2 = 0
-        #     ties = 0
-        #     for i in range(100000):
-        #         winner = self.play_one_game_ai()
-        #         if winner == 2:
-        #             wins1 += 1
-        #         elif winner == 0:
-        #             wins2 += 1
-        #         else:
-        #             ties += 1
-        #     print("generation: " + str(j+2) + " random: " + str(self.alfa) + "%")
-        #     print("player x won: " + str(wins1 / 1000) + "%")
-        #     print("player o won: " + str(wins2 / 1000) + "%")
-        #     print("a tie happened " + str(ties / 1000) + "% of the time")
-        # self.alfa = 0
-        # wins1 = 0
-        # wins2 = 0
-        # ties = 0
-        # for i in range(100000):
-        #     winner = self.play_one_game_ai()
-        #     if winner == 2:
-        #         wins1 += 1
-        #     elif winner == 0:
-        #         wins2 += 1
-        #     else:
-        #         ties += 1
-        # print("last generation: alfa = 0%")
-        # print("player x won: " + str(wins1 / 1000) + "%")
-        # print("player o won: " + str(wins2 / 1000) + "%")
-        # print("a tie happened " + str(ties / 1000) + "% of the time")
+        j = 0
+        self.alfa = 0
+        while ties != 100000:
+            # self.alfa -= 2
+            wins1 = 0
+            wins2 = 0
+            ties = 0
+            j += 1
+            for i in range(100000):
+                winner = self.play_one_game_ai()
+                if winner == 2:
+                    wins1 += 1
+                elif winner == 0:
+                    wins2 += 1
+                else:
+                    ties += 1
+            print("generation: " + str(j+1) + " random: " + str(self.alfa) + "%")
+            print("player x won: " + str(wins1 / 1000) + "%")
+            print("player o won: " + str(wins2 / 1000) + "%")
+            print("a tie happened " + str(ties / 1000) + "% of the time")
 
 
 def main():
