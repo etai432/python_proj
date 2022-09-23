@@ -38,16 +38,20 @@ class TicTacToe:
 
     def player_turn(self):
         self.empty_space()
-        print(self.empty)
-        input1 = int(input("please pick a spot from the list of empty spaces: "))
+        input1 = int(input("please pick a spot from the empty spaces: "))
         while input1 not in self.empty:
-            input1 = int(input("please pick a spot from the list of empty spaces: "))
+            input1 = int(input("please pick a spot from the empty spaces: "))
         return input1
 
     def print_board(self):
         print("the board: ")
         for i in range(9):
-            print(self.board[i], end="  ")
+            if self.board[i] == 2:
+                print("|X|", end="")
+            elif self.board[i] == 0:
+                print("|O|", end="")
+            else:
+                print("|" + str(i + 1) + "|", end="")
             if i % 3 == 2:
                 print("")
 
