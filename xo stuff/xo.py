@@ -1,3 +1,4 @@
+import csv
 import random
 import time
 
@@ -212,26 +213,28 @@ class TicTacToe:
         print("player x won: " + str(wins1 / 1000) + "%")
         print("player o won: " + str(wins2 / 1000) + "%")
         print("a tie happened " + str(ties / 1000) + "% of the time")
-        # j = 0
-        # while ties != 100000:
-        #     self.alfa -= 2
-        #     wins1 = 0
-        #     wins2 = 0
-        #     ties = 0
-        #     j += 1
-        #     for i in range(100000):
-        #         winner = self.play_one_game_ai()
-        #         if winner == 2:
-        #             wins1 += 1
-        #         elif winner == 0:
-        #             wins2 += 1
-        #         else:
-        #             ties += 1
-        #     print("generation: " + str(j+1) + " random: " + str(self.alfa) + "%")
-        #     print("player x won: " + str(wins1 / 1000) + "%")
-        #     print("player o won: " + str(wins2 / 1000) + "%")
-        #     print("a tie happened " + str(ties / 1000) + "% of the time")
-
+        j = 0
+        while ties != 100000:
+            self.alfa -= 2
+            wins1 = 0
+            wins2 = 0
+            ties = 0
+            j += 1
+            for i in range(100000):
+                winner = self.play_one_game_ai()
+                if winner == 2:
+                    wins1 += 1
+                elif winner == 0:
+                    wins2 += 1
+                else:
+                    ties += 1
+            print("generation: " + str(j+1) + " random: " + str(self.alfa) + "%")
+            print("player x won: " + str(wins1 / 1000) + "%")
+            print("player o won: " + str(wins2 / 1000) + "%")
+            print("a tie happened " + str(ties / 1000) + "% of the time")
+        w = csv.writer(open("output.csv", "w"))
+        for key, val in self.dict.items():
+            w.writerow([key, val])
 
 def main():
     start = time.time()
