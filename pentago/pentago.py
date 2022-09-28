@@ -8,6 +8,7 @@ class Game:
         self.board = np.full(1, 36)
 
 
+
 def main():
     print("hi")
 
