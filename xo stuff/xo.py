@@ -1,6 +1,8 @@
 import csv
 import random
 import time
+import pandas as pd
+import numpy as np
 
 
 class TicTacToe:
@@ -8,7 +10,8 @@ class TicTacToe:
     def __init__(self):
         self.board = []
         self.empty = []
-        self.dict = {}
+        self.dict = {row[0]: row[1] for _, row in pd.read_csv("xo_dict.csv").iterrows()}
+        # self.dict = {}
         self.gamma = 0.9
         self.alfa = 20
 
@@ -55,7 +58,7 @@ class TicTacToe:
     def rate_boards(self, game_boards, winner):
         list1 = []
         for i in range(len(game_boards)):
-            list1.append((str(game_boards[i]), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
+            list1.append((str(np.array(game_boards[i])), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
         return list1
 
     def play_one_game(self):  # pc = x, player = o
@@ -140,15 +143,15 @@ class TicTacToe:
         for i in self.empty:
             copy_board = self.board[:]
             copy_board[i - 1] = player
-            copy_board = str(copy_board)
+            copy_board = str(np.array(copy_board))
             if copy_board in self.dict:
                 if player == 2:
-                    if max1 < self.dict[copy_board][0]:
-                        max1 = self.dict[copy_board][0]
+                    if max1 < self.dict[copy_board]:
+                        max1 = self.dict[copy_board]
                         index = i
                 else:
-                    if min1 > self.dict[copy_board][0]:
-                        min1 = self.dict[copy_board][0]
+                    if min1 > self.dict[copy_board]:
+                        min1 = self.dict[copy_board]
                         index = i
         if index == -1:
             index = self.computer_turn()
@@ -213,37 +216,79 @@ class TicTacToe:
         print("player x won: " + str(wins1 / 1000) + "%")
         print("player o won: " + str(wins2 / 1000) + "%")
         print("a tie happened " + str(ties / 1000) + "% of the time")
-        j = 0
-        while ties != 100000:
-            self.alfa -= 2
-            wins1 = 0
-            wins2 = 0
-            ties = 0
-            j += 1
-            for i in range(100000):
-                winner = self.play_one_game_ai()
-                if winner == 2:
-                    wins1 += 1
-                elif winner == 0:
-                    wins2 += 1
-                else:
-                    ties += 1
-            print("generation: " + str(j+1) + " random: " + str(self.alfa) + "%")
-            print("player x won: " + str(wins1 / 1000) + "%")
-            print("player o won: " + str(wins2 / 1000) + "%")
-            print("a tie happened " + str(ties / 1000) + "% of the time")
-        w = csv.writer(open("output.csv", "w"))
-        for key, val in self.dict.items():
-            w.writerow([key, val])
+        # j = 0
+        # while ties != 100000:
+        #     self.alfa -= 2
+        #     wins1 = 0
+        #     wins2 = 0
+        #     ties = 0
+        #     j += 1
+        #     for i in range(100000):
+        #         winner = self.play_one_game_ai()
+        #         if winner == 2:
+        #             wins1 += 1
+        #         elif winner == 0:
+        #             wins2 += 1
+        #         else:
+        #             ties += 1
+        #     print("generation: " + str(j+1) + " random: " + str(self.alfa) + "%")
+        #     print("player x won: " + str(wins1 / 1000) + "%")
+        #     print("player o won: " + str(wins2 / 1000) + "%")
+        #     print("a tie happened " + str(ties / 1000) + "% of the time")
+        with open('xo_dict.csv', 'w') as output_file:
+            for key in self.dict:
+                output_file.write("%s,%s\n" % (key, self.dict[key][0]))
+        output_file.close()
+
 
 def main():
     start = time.time()
-    game = TicTacToe()
-    game.run_games()
+    # game = TicTacToe()
+    # game.run_games()
     print(time.time() - start)
-    game.play_one_game()
-    game.play_one_game()
-    game.play_one_game()
+
+
+def load_dict():
+    return {row[0]: row[1] for _, row in pd.read_csv("xo_dict.csv").iterrows()}
+
+
+def choose_next_move(board, dict1):
+    empty = []
+    for i in range(9):
+        if board[i] == 1:
+            empty.append(i)
+    max1 = -1
+    index = -1
+    for i in empty:
+        copy_board = board[:]
+        copy_board[i] = 2
+        copy_board = str(np.array(copy_board))
+        if copy_board in dict1:
+            if max1 < dict1[copy_board]:
+                max1 = dict1[copy_board]
+                index = i
+    if index == -1:
+        index = random.choice(empty)
+    return index
+
+
+def reset_board():
+    return [1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+
+def check_win(board, last_index, turn):
+    if board[last_index % 3] == board[last_index % 3 + 3] == board[last_index % 3 + 6] != 1:
+        return turn
+    if board[last_index // 3 * 3] == board[last_index // 3 * 3 + 1] == board[last_index // 3 * 3 + 2] != 1:
+        return turn
+    if (board[0] == board[4] == board[8] or board[2] == board[4] == board[6]) and board[4] != 1:
+        return turn
+
+
+def is_empty(board):
+    if 1 in board:
+        return False
+    return True
 
 
 if __name__ == "__main__":
