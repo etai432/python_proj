@@ -245,7 +245,7 @@ def main():
     start = time.time()
     # game = TicTacToe()
     # game.run_games()
-    # testing 4.0
+    # testing 5.0
     print(time.time() - start)
 
 
