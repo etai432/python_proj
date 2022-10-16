@@ -281,7 +281,7 @@ class Game:
         wins1 = 0
         wins2 = 0
         ties = 0
-        for i in range(2000000):
+        for i in range(100000):
             winner = self.play_one_game_ai()
             if winner == 2:
                 wins1 += 1
@@ -300,7 +300,7 @@ def main():
     game.run_games()
     with open('pentago_dict3.csv', 'w') as output_file:
         for key in game.dict:
-            output_file.write("%s,%s\n" % (key, game.dict[key]))
+            output_file.write("%s,%s\n" % (key, game.dict[key][0]))
     output_file.close()
 
 
