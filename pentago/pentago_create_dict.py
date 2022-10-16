@@ -145,7 +145,7 @@ class Game:
     def rate_boards(self, game_boards, winner):
         list1 = []
         for i in range(len(game_boards)):
-            list1.append((str(list(game_boards[i])), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
+            list1.append((str(game_boards[i]), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
         return list1
 
     def play_one_game(self):
@@ -298,7 +298,7 @@ def main():
     game = Game()
     # game.run_games_ai()
     game.run_games()
-    with open('pentago_dict2.csv', 'w') as output_file:
+    with open('pentago_dict3.csv', 'w') as output_file:
         for key in game.dict:
             output_file.write("%s,%s\n" % (key, game.dict[key]))
     output_file.close()
