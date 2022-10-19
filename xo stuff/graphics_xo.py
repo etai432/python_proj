@@ -28,15 +28,34 @@ class Cell(Button):
         self.gb.react(self)
 
 
+class RestartButton(Button):
+    def __init__(self, graphBoard):
+        Button.__init__(self)
+        size = (100, 200)
+        pos = (0, 0)
+        size_hint = (.5, 2),
+        self.font_size = 80
+        self.font_size = 150
+        self.text = "Restart"
+        self.gb = graphBoard
+
+
+    def on_press(self):
+        self.gb
+        self.gb.__init__()
+
+
 class Board(GridLayout):
 
     def __init__(self):
+        self.clear_widgets()
+        self.cols = 3
+        self.rows = 3
         self.buttons_arr = []
         self.game_board = xo.reset_board()
         self.dict = xo.load_dict()
         self.turns = 0
         GridLayout.__init__(self)
-        self.cols = 3
         self.addCellsToBoatd()
         self.myModel = Model()
 
@@ -52,13 +71,15 @@ class Board(GridLayout):
         self.buttons_arr[computer_turn].disabled = True
 
     def win(self, winner):
-        for i in self.buttons_arr:
-            self.remove_widget(i)
         if winner == "tie":
             my_label = kivy.uix.label.Label(text="its a tie!", font_size='120sp', color="green")
         else:
             my_label = kivy.uix.label.Label(text="the winner is the " + winner + "!", font_size='60sp', color="green")
+        self.clear_widgets()
+        self.cols = 1
+        self.rows = 2
         self.add_widget(my_label)
+        self.add_widget(RestartButton(self))
 
     def react(self, choosenButton):
         self.game_board[choosenButton.line * 3 + choosenButton.col] = 0
