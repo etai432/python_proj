@@ -4,7 +4,6 @@ from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 import xo
-import time
 
 
 class Model:
@@ -31,9 +30,6 @@ class Cell(Button):
 class RestartButton(Button):
     def __init__(self, graphBoard):
         Button.__init__(self)
-        size = (100, 200)
-        pos = (0, 0)
-        size_hint = (.5, 2),
         self.font_size = 80
         self.font_size = 150
         self.text = "Restart"
@@ -41,7 +37,6 @@ class RestartButton(Button):
 
 
     def on_press(self):
-        self.gb
         self.gb.__init__()
 
 
