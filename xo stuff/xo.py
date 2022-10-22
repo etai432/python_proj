@@ -11,7 +11,7 @@ class TicTacToe:
         self.board = []
         self.empty = []
         self.dict = {row[0]: row[1]
-                     for _, row in pd.read_csv("xo_dict.csv").iterrows()}
+                     for _, row in pd.read_csv(r"xo_dict.csv").iterrows()}
         # self.dict = {}
         self.gamma = 0.9
         self.alfa = 20
