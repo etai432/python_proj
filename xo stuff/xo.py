@@ -10,7 +10,8 @@ class TicTacToe:
     def __init__(self):
         self.board = []
         self.empty = []
-        self.dict = {row[0]: row[1] for _, row in pd.read_csv("xo_dict.csv").iterrows()}
+        self.dict = {row[0]: row[1]
+                     for _, row in pd.read_csv("xo_dict.csv").iterrows()}
         # self.dict = {}
         self.gamma = 0.9
         self.alfa = 20
@@ -58,7 +59,8 @@ class TicTacToe:
     def rate_boards(self, game_boards, winner):
         list1 = []
         for i in range(len(game_boards)):
-            list1.append((str(np.array(game_boards[i])), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
+            list1.append((str(np.array(
+                game_boards[i])), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
         return list1
 
     def play_one_game(self):  # pc = x, player = o
@@ -107,7 +109,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 2)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 2
@@ -115,7 +118,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 1)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 1
@@ -128,7 +132,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 0)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 0
@@ -174,7 +179,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 2)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 2
@@ -182,7 +188,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 1)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 1
@@ -195,7 +202,8 @@ class TicTacToe:
                 game_boards = self.rate_boards(game_boards, 0)
                 for i in game_boards:
                     if i[0] in self.dict:
-                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (
+                            self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
                     else:
                         self.dict[i[0]] = (i[1], 1)
                 return 0
@@ -249,7 +257,7 @@ def main():
 
 
 def load_dict():
-    return {row[0]: row[1] for _, row in pd.read_csv("xo_dict.csv").iterrows()}
+    return {row[0]: row[1] for _, row in pd.read_csv("xo stuff\xo_dict.csv").iterrows()}
 
 
 def choose_next_move(board, dict1):
