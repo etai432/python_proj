@@ -1,4 +1,4 @@
-for i in range(2001, 4996):
+for i in range(1, 2001):
     if i % 2 == 0:
         print("elif i == " + str(i) + ":")
         print('\tprint("even")')
