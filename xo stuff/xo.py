@@ -257,7 +257,7 @@ def main():
 
 
 def load_dict():
-    return {row[0]: row[1] for _, row in pd.read_csv(r"xo stuff\xo_dict.csv").iterrows()}
+    return {row[0]: row[1] for _, row in pd.read_csv(r"xo stuff/xo_dict.csv").iterrows()}
 
 
 def choose_next_move(board, dict1):
