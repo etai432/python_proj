@@ -35,7 +35,6 @@ class RestartButton(Button):
         self.text = "Restart"
         self.gb = graphBoard
 
-
     def on_press(self):
         self.gb.__init__()
 
@@ -54,7 +53,6 @@ class Board(GridLayout):
         self.addCellsToBoatd()
         self.myModel = Model()
 
-
     def addCellsToBoatd(self):
         for line in range(3):
             for col in range(3):
@@ -67,9 +65,11 @@ class Board(GridLayout):
 
     def win(self, winner):
         if winner == "tie":
-            my_label = kivy.uix.label.Label(text="its a tie!", font_size='120sp', color="green")
+            my_label = kivy.uix.label.Label(
+                text="its a tie!", font_size='120sp', color="green")
         else:
-            my_label = kivy.uix.label.Label(text="the winner is the " + winner + "!", font_size='60sp', color="green")
+            my_label = kivy.uix.label.Label(
+                text="the winner is the " + winner + "!", font_size='60sp', color="green")
         self.clear_widgets()
         self.cols = 1
         self.rows = 2
