@@ -2,11 +2,11 @@ import random
 
 
 def main():
-    words = {'אוטונומיה':'autonomy', 'להיות מודע ל':'be conscious of', 'התנהגות':'conduct', 'התפתחות':'development', 'להתנסות':'To Experiment',
-    'מבוגר':'grown-up', 'יד ביד':'Hand in hand', 'מנהיגות':'Leadership', 'תערוכה':'Exhibition', 'עמית':'peer', 'אחראי':'responsible', 
-    'נטייה':'Tendency', 'לקשר':'Associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
-    'תוצאה':'outcome', 'ביטחון עצמי':'Self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'Isolation', 
-    'הדדי, משותף':'Mutual', 'יקר ערך':'precious', 'לנצל':'Exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictible', 
+    words = {'אוטונומיה':'autonomy', 'להיות מודע ל':'be conscious of', 'התנהגות':'conduct', 'התפתחות':'development', 'להתנסות':'to experiment',
+    'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsible', 
+    'נטייה':'tendency', 'לקשר':'associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
+    'תוצאה':'outcome', 'ביטחון עצמי':'self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'isolation', 
+    'הדדי, משותף':'mutual', 'יקר ערך':'precious', 'לנצל':'exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictible', 
     'להכשיר':'qualify', 'הכשרה':'qualification'}  # hebrew : english
     correct = 0
     errors = 0
