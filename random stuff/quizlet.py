@@ -2,12 +2,12 @@ import random
 
 
 def main():
-    words = {'להקל על, לשכך': 'alleviate', 'הקשר, קונטקסט': 'context', 'קטע קריאה': 'passage', 'ביטוי': 'phrase',
-             'עדינות, שנינות': 'subtlety', 'להעריך, לאמוד': 'assess', 'לא מדוייק': 'inaccurate',
-             'שווה ערך': 'equivalent', 'באופן הולם, בצורה נאותה': 'appropriately', 'להתקין': 'install',
-             'תוכנת מחשב': 'software', 'מעודן, דק, שנון, מתוחכם': 'subtle', 'מגרעת, חיסרון': 'drawback',
-             'באופן בלתי הולם': 'inappropriately', 'מקצועי, מיומן': 'proficient', 'כמות מספקת, מספיק': 'sufficient',
-             'מיותר, עודף': 'superfluous', 'מדוייק, דייקן': 'accurate'}  # hebrew : english
+    words = {'אוטונומיה':'autonomy', 'להיות מודע ל':'be conscious of', 'התנהגות':'conduct', 'התפתחות':'development', 'להתנסות':'To Experiment',
+    'מבוגר':'grown-up', 'יד ביד':'Hand in hand', 'מנהיגות':'Leadership', 'תערוכה':'Exhibition', 'עמית':'peer', 'אחראי':'responsible', 
+    'נטייה':'Tendency', 'לקשר':'Associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
+    'תוצאה':'outcome', 'ביטחון עצמי':'Self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'Isolation', 
+    'הדדי, משותף':'Mutual', 'יקר ערך':'precious', 'לנצל':'Exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictible', 
+    'להכשיר':'qualify', 'הכשרה':'qualification'}  # hebrew : english
     correct = 0
     errors = 0
     length = len(words)

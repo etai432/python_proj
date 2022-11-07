@@ -2,6 +2,7 @@ class Damka:
     def __init__(self):
         self.board = []
         self.moves = []
+        self.kills = []
         self.dict = {}
     
     def restart_board1(self):
@@ -14,5 +15,19 @@ class Damka:
             if self.board[63-i] == 0:
                 return 0
         return 1
+
+    def gen_moves(player, place):
+        self.moves = []
+        if player == 0:
+            if place % 8 != 0 and self.board[place + 7] == 1:
+                self.moves.append(place+7)
+            if place % 8 != 7 and self.boards[place + 9] == 1:
+                self.moves.append(place+9)
+        if player == 2:
+            if place % 8 != 0 and self.board[place - 7] == 1:
+                self.moves.append(place+7)
+            if place % 8 != 7 and self.boards[place - 9] == 1:
+                self.moves.append(place+9)
+        
     
     
