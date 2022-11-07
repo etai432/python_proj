@@ -6,7 +6,7 @@ def main():
     'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsible', 
     'נטייה':'tendency', 'לקשר':'associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
     'תוצאה':'outcome', 'ביטחון עצמי':'self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'isolation', 
-    'הדדי, משותף':'mutual', 'יקר ערך':'precious', 'לנצל':'exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictible', 
+    'הדדי, משותף':'mutual', 'יקר ערך':'precious', 'לנצל':'exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictable', 
     'להכשיר':'qualify', 'הכשרה':'qualification'}  # hebrew : english
     correct = 0
     errors = 0
