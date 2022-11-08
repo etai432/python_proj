@@ -3,6 +3,7 @@ class Damka:
         self.board = []
         self.moves = []
         self.kills = []
+        self.turn = []
         self.dict = {}
     
     def restart_board(self):
@@ -28,7 +29,7 @@ class Damka:
                 self.moves.append(place - 9)
             if place % 8 != 7 and self.board[place - 7] == 1:
                 self.moves.append(place - 7)
-    
+
     def gen_kill(self, place):
         self.kills = []
         if self.board[place] == 0:
@@ -42,6 +43,15 @@ class Damka:
             if place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
                 self.kills.append(place - 14)
     
+    def gen_all_moves(self, place):
+        self.turn = []
+        self.gen_moves(place)
+        for i in self.moves:
+            self.turn.append(i)
+        self.gen_kill(place)
+        for i in self.kills:
+            self.turn.append(i)
+    
     def print_board(self):
         print("the board: ")
         for i in range(64):
@@ -53,10 +63,10 @@ class Damka:
                 print("| |", end="")
             if i % 8 == 7:
                 print("")
-        
-    
+
+
 damka = Damka()
 damka.restart_board()
 damka.print_board()
-damka.gen_moves(42)
+damka.gen_all_moves(21)
 print(damka.moves)
