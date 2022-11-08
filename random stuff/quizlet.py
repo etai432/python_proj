@@ -3,7 +3,7 @@ import random
 
 def main():
     words = {'אוטונומיה':'autonomy', 'להיות מודע ל':'be conscious of', 'התנהגות':'conduct', 'התפתחות':'development', 'להתנסות':'to experiment',
-    'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsible', 
+    'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsable', 
     'נטייה':'tendency', 'לקשר':'associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
     'תוצאה':'outcome', 'ביטחון עצמי':'self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'isolation', 
     'הדדי, משותף':'mutual', 'יקר ערך':'precious', 'לנצל':'exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictable', 
@@ -17,7 +17,7 @@ def main():
         for i in range(len(words)):
             pick = random.choice(list(words.keys()))
             while pick in picked:
-                pick = random.choice(list(words.keysd()))
+                pick = random.choice(list(words.keys()))
             picked.append(pick)
             answer = input(str(pick) + " ")
             if answer == words[pick]:
