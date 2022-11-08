@@ -17,7 +17,7 @@ def main():
         for i in range(len(words)):
             pick = random.choice(list(words.keys()))
             while pick in picked:
-                pick = random.choice(list(words.keys()))
+                pick = random.choice(list(words.keysd()))
             picked.append(pick)
             answer = input(str(pick) + " ")
             if answer == words[pick]:
