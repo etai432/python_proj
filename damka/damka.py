@@ -20,14 +20,27 @@ class Damka:
         self.moves = []
         if self.board[place] == 0:
             if place % 8 != 0 and self.board[place + 7] == 1:
-                self.moves.append(place+7)
+                self.moves.append(place + 7)
             if place % 8 != 7 and self.board[place + 9] == 1:
-                self.moves.append(place+9)
+                self.moves.append(place + 9)
         if self.board[place] == 2:
             if place % 8 != 0 and self.board[place - 9] == 1:
                 self.moves.append(place - 9)
             if place % 8 != 7 and self.board[place - 7] == 1:
                 self.moves.append(place - 7)
+    
+    def gen_kill(self, place):
+        self.kills = []
+        if self.board[place] == 0:
+            if place % 8 != 0 and place % 8 != 1 and self.board[place + 7] == 2 and self.board[place + 14] == 1:
+                self.kills.append(place + 14)
+            if place % 8 != 7 and place * 8 != 6 and self.board[place + 9] == 2 and self.board[place + 18] == 1:
+                self.kills.append(place + 18)
+        if self.board[place] == 2:
+            if place % 8 != 0 and place % 8 != 1 and self.board[place - 9] == 0 and self.board[place - 18] == 1:
+                self.kills.append(place - 18)
+            if place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
+                self.kills.append(place - 14)
     
     def print_board(self):
         print("the board: ")
