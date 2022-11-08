@@ -16,18 +16,18 @@ class Damka:
                 return 0
         return 1
 
-    def gen_moves(self, player, place):
+    def gen_moves(self, place):
         self.moves = []
-        if player == 0:
+        if self.board[place] == 0:
             if place % 8 != 0 and self.board[place + 7] == 1:
                 self.moves.append(place+7)
             if place % 8 != 7 and self.board[place + 9] == 1:
                 self.moves.append(place+9)
-        if player == 2:
-            if place % 8 != 0 and self.board[place - 7] == 1:
-                self.moves.append(place+7)
-            if place % 8 != 7 and self.board[place - 9] == 1:
-                self.moves.append(place+9)
+        if self.board[place] == 2:
+            if place % 8 != 0 and self.board[place - 9] == 1:
+                self.moves.append(place - 9)
+            if place % 8 != 7 and self.board[place - 7] == 1:
+                self.moves.append(place - 7)
     
     def print_board(self):
         print("the board: ")
@@ -45,3 +45,5 @@ class Damka:
 damka = Damka()
 damka.restart_board()
 damka.print_board()
+damka.gen_moves(42)
+print(damka.moves)
