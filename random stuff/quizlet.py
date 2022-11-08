@@ -3,7 +3,7 @@ import random
 
 def main():
     words = {'אוטונומיה':'autonomy', 'להיות מודע ל':'be conscious of', 'התנהגות':'conduct', 'התפתחות':'development', 'להתנסות':'to experiment',
-    'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsable', 
+    'מבוגר':'grown-up', 'יד ביד':'hand in hand', 'מנהיגות':'leadership', 'תערוכה':'exhibition', 'עמית':'peer', 'אחראי':'responsible', 
     'נטייה':'tendency', 'לקשר':'associate', 'להגביר':'boost', 'ברור':'evident', 'להדגים':'illustrate', 'להוביל ל':'lead to', 
     'תוצאה':'outcome', 'ביטחון עצמי':'self confidence', 'לערער':'appeal', 'להציג':'exhibit', 'בידוד':'isolation', 
     'הדדי, משותף':'mutual', 'יקר ערך':'precious', 'לנצל':'exploit', 'ליישם':'implement', 'לחזות':'predict', 'צפוי':'predictable', 
@@ -29,7 +29,6 @@ def main():
                 errors += 1
         print("you got " + str(correct - start) + " words this round, " + str(length - correct) + " left!")
     print("you had " + str(errors) + " errors")
-    #test
 
 if __name__ == '__main__':
     main()
