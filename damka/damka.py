@@ -14,12 +14,23 @@ class Damka:
         self.board = [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1]
 
     def random_turn(self, player):
+        counter = 0
+        players = self.count_troops()
         if player == 0:
             self.players(player)
             self.turn = []
             while(len(self.turn) == 0):
                 place = random.choice(self.players0)
                 self.gen_all_moves(place)
+                counter += 1
+                if counter > players[0]:
+                    for i in range(64):
+                        if self.board[i] == 0:
+                            self.gen_all_moves(i)
+                            print(i)
+                            if len(self.turn) > 0:
+                                return(place, random.choice(self.turn))
+                    return (-1, -1)
             return (place, random.choice(self.turn))
         if player == 2:
             self.players(player)
@@ -27,6 +38,15 @@ class Damka:
             while(len(self.turn) == 0):
                 place = random.choice(self.players2)
                 self.gen_all_moves(place)
+                counter += 1
+                if counter > players[1]:
+                    for i in range(64):
+                        if self.board[i] == 2:
+                            self.gen_all_moves(i)
+                            print(i)
+                            if len(self.turn) > 0:
+                                return(place, random.choice(self.turn))
+                    return (-1, -1)
             return (place, random.choice(self.turn))
 
     def check_win(self):
@@ -73,14 +93,14 @@ class Damka:
     def gen_kill(self, place):
         self.kills = []
         if self.board[place] == 0:
-            if place % 8 != 0 and place % 8 != 1 and self.board[place + 7] == 2 and self.board[place + 14] == 1:
+            if place < 50 and place % 8 != 0 and place % 8 != 1 and self.board[place + 7] == 2 and self.board[place + 14] == 1:
                 self.kills.append(place + 14)
-            if place % 8 != 7 and place * 8 != 6 and self.board[place + 9] == 2 and self.board[place + 18] == 1:
+            if place < 46 and place % 8 != 7 and place % 8 != 6 and self.board[place + 9] == 2 and self.board[place + 18] == 1:
                 self.kills.append(place + 18)
         if self.board[place] == 2:
-            if place % 8 != 0 and place % 8 != 1 and self.board[place - 9] == 0 and self.board[place - 18] == 1:
+            if place > 17 and place % 8 != 0 and place % 8 != 1 and self.board[place - 9] == 0 and self.board[place - 18] == 1:
                 self.kills.append(place - 18)
-            if place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
+            if place > 13 and place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
                 self.kills.append(place - 14)
     
     def gen_more_kills(self, place, kill_list):
@@ -184,18 +204,40 @@ class Damka:
     
     def random_play(self):
         self.restart_board()
+        turn = 2
+        tup = (0, 0)
+        counter = 0
+        is_tie = False
+        while self.check_win() == 1 and counter < 40:
+            counter += 1
+            if is_tie:
+                return 1
+            if turn == 2:
+                tup = self.random_turn(2)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.move(tup[0], tup[1])
+                turn = 0
+            if turn == 0:
+                tup = self.random_turn(0)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.move(tup[0], tup[1])
+                turn = 2
+        return self.check_win()
 
 damka = Damka()
-damka.restart_board()
-damka.board[30] = 2
-damka.board[28] = 2
-damka.board[51] = 1
-damka.print_board()
-damka.gen_all_moves(19)
-print(damka.turn)
-damka.move(19, 33)
-damka.print_board()
-tup = damka.random_turn(2)
-print(tup)
-damka.move(tup[0], tup[1])
-damka.print_board()
+damka.random_play()
+# damka.restart_board()
+# damka.board[30] = 2
+# damka.board[28] = 2
+# damka.board[51] = 1
+# damka.print_board()
+# damka.gen_all_moves(19)
+# print(damka.turn)
+# damka.move(19, 33)
+# damka.print_board()
+# tup = damka.random_turn(2)
+# print(tup)
+# damka.move(tup[0], tup[1])
+# damka.print_board()
