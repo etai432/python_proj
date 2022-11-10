@@ -276,6 +276,7 @@ def main():
     damka = Damka()
     damka.run()
     print(time.time() - start)
+    #test
 
 if __name__ == "__main__":
     main()
