@@ -43,6 +43,26 @@ class Damka:
             if place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
                 self.kills.append(place - 14)
     
+    def gen_double(self, place, kill_list):
+        doubles = []
+        for i in kill_list:
+            player = self.board[place]
+            self.board[i] = player
+            if player == 0:
+                if i % 8 != 0 and i % 8 != 1 and self.board[i + 7] == 2 and self.board[i + 14] == 1:
+                    doubles.append((i, i + 14))
+                if i % 8 != 0 and i % 8 != 1 and self.board[i - 9] == 2 and self.board[i - 18] == 1:
+                    doubles.append((i, i - 18))
+            if player == 2:
+                if i % 8 != 7 and i % 8 != 6 and self.board[i + 9] == 2 and self.board[i + 18] == 1:
+                    doubles.append((i, i + 18))
+                if i % 8 != 0 and i % 8 != 1 and self.board[i -7] == 2 and self.board[i - 14] == 1:
+                    doubles.append((i, i - 14))
+            self.board[i] = 1
+        return doubles
+
+
+    
     def gen_all_moves(self, place):
         self.turn = []
         self.gen_moves(place)
@@ -51,6 +71,10 @@ class Damka:
         self.gen_kill(place)
         for i in self.kills:
             self.turn.append(i)
+        doubles = self.gen_double(place, self.kills)
+        for i in doubles:
+            self.turn.append(i)
+        
     
     def print_board(self):
         print("the board: ")
@@ -67,6 +91,8 @@ class Damka:
 
 damka = Damka()
 damka.restart_board()
+damka.board[30] = 2
+damka.board[53] = 1
 damka.print_board()
 damka.gen_all_moves(21)
 print(damka.turn)
