@@ -125,6 +125,27 @@ class Damka:
         doubles = self.gen_more_kills(place, self.kills)
         for i in doubles:
             self.turn.append(i)
+    
+    def move(self, place, goal):
+        for i in self.turn:
+            if isinstance(i, int):
+                if i == goal:
+                    player = self.board[place]
+                    if abs(goal - place) > 10:
+                        self.board[place] = 1
+                        self.board[int((goal + place)/2)] = 1
+                        self.board[goal] = player
+                    else:
+                        self.board[place] = 1
+                        self.board[goal] = player
+            else:
+                if i[1] == goal:
+                    self.move(place, i[0])
+                    player = self.board[i[0]]
+                    self.board[i[0]] = 1
+                    self.board[int((i[1] + i[0])/2)] = 1
+                    self.board[i[1]] = player
+
         
     
     def print_board(self):
@@ -139,7 +160,6 @@ class Damka:
             if i % 8 == 7:
                 print("")
 
-
 damka = Damka()
 damka.restart_board()
 damka.board[30] = 2
@@ -148,3 +168,5 @@ damka.board[51] = 1
 damka.print_board()
 damka.gen_all_moves(19)
 print(damka.turn)
+damka.move(19, 33)
+damka.print_board()
