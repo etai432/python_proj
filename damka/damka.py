@@ -3,6 +3,8 @@ class Damka:
         self.board = []
         self.moves = []
         self.kills = []
+        self.players2 = []
+        self.players0 = []
         self.turn = []
         self.dict = {}
     
@@ -16,6 +18,18 @@ class Damka:
             if self.board[63-i] == 0:
                 return 0
         return 1
+
+    def players(self, turn):
+        if turn == 0:
+            for i in range(64):
+                if self.board[i] == 0:
+                    self.players0.append(i)
+        if turn == 2:
+            for i in range(64):
+                if self.board[i] == 2:
+                    self.players2.append(i)
+            
+
 
     def gen_moves(self, place):
         self.moves = []
