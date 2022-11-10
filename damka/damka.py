@@ -1,3 +1,5 @@
+import random
+
 class Damka:
     def __init__(self):
         self.board = []
@@ -10,6 +12,22 @@ class Damka:
     
     def restart_board(self):
         self.board = [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1]
+
+    def random_turn(self, player):
+        if player == 0:
+            self.players(player)
+            self.turn = []
+            while(len(self.turn) == 0):
+                place = random.choice(self.players0)
+                self.gen_all_moves(place)
+            return (place, random.choice(self.turn))
+        if player == 2:
+            self.players(player)
+            self.turn = []
+            while(len(self.turn) == 0):
+                place = random.choice(self.players2)
+                self.gen_all_moves(place)
+            return (place, random.choice(self.turn))
 
     def check_win(self):
         for i in range(8):
@@ -29,8 +47,6 @@ class Damka:
                 if self.board[i] == 2:
                     self.players2.append(i)
             
-
-
     def gen_moves(self, place):
         self.moves = []
         if self.board[place] == 0:
@@ -112,8 +128,6 @@ class Damka:
             self.board[int((i + place)/2)] = abs(2-player)
         return doubles
 
-
-    
     def gen_all_moves(self, place):
         self.turn = []
         self.gen_moves(place)
@@ -146,8 +160,6 @@ class Damka:
                     self.board[int((i[1] + i[0])/2)] = 1
                     self.board[i[1]] = player
 
-        
-    
     def print_board(self):
         print("the board: ")
         for i in range(64):
@@ -159,6 +171,9 @@ class Damka:
                 print("| |", end="")
             if i % 8 == 7:
                 print("")
+    
+    def random_play(self):
+        self.restart_board()
 
 damka = Damka()
 damka.restart_board()
@@ -169,4 +184,8 @@ damka.print_board()
 damka.gen_all_moves(19)
 print(damka.turn)
 damka.move(19, 33)
+damka.print_board()
+tup = damka.random_turn(2)
+print(tup)
+damka.move(tup[0], tup[1])
 damka.print_board()
