@@ -1,4 +1,6 @@
 import random
+import time
+import csv
 
 class Damka:
     def __init__(self):
@@ -15,7 +17,7 @@ class Damka:
 
     def random_turn(self, player):
         counter = 0
-        players = self.count_troops()
+        players = self.count_troops(self.board)
         if player == 0:
             self.players(player)
             self.turn = []
@@ -27,7 +29,6 @@ class Damka:
                     for i in range(64):
                         if self.board[i] == 0:
                             self.gen_all_moves(i)
-                            print(i)
                             if len(self.turn) > 0:
                                 return(place, random.choice(self.turn))
                     return (-1, -1)
@@ -43,7 +44,6 @@ class Damka:
                     for i in range(64):
                         if self.board[i] == 2:
                             self.gen_all_moves(i)
-                            print(i)
                             if len(self.turn) > 0:
                                 return(place, random.choice(self.turn))
                     return (-1, -1)
@@ -57,10 +57,10 @@ class Damka:
                 return 0
         return 1
     
-    def count_troops(self):
+    def count_troops(self, board):
         troop0 = 0
         troop2 = 0
-        for i in self.board:
+        for i in board:
             if i == 0:
                 troop0 += 1
             if i == 2:
@@ -80,14 +80,14 @@ class Damka:
     def gen_moves(self, place):
         self.moves = []
         if self.board[place] == 0:
-            if place % 8 != 0 and self.board[place + 7] == 1:
+            if place < 57 and place % 8 != 0 and self.board[place + 7] == 1:
                 self.moves.append(place + 7)
-            if place % 8 != 7 and self.board[place + 9] == 1:
+            if place < 55 and place % 8 != 7 and self.board[place + 9] == 1:
                 self.moves.append(place + 9)
         if self.board[place] == 2:
-            if place % 8 != 0 and self.board[place - 9] == 1:
+            if place > 8 and place % 8 != 0 and self.board[place - 9] == 1:
                 self.moves.append(place - 9)
-            if place % 8 != 7 and self.board[place - 7] == 1:
+            if place > 6 and place % 8 != 7 and self.board[place - 7] == 1:
                 self.moves.append(place - 7)
 
     def gen_kill(self, place):
@@ -170,7 +170,7 @@ class Damka:
         for i in doubles:
             self.turn.append(i)
     
-    def move(self, place, goal):
+    def move(self, place, goal, last):
         for i in self.turn:
             if isinstance(i, int):
                 if i == goal:
@@ -183,8 +183,8 @@ class Damka:
                         self.board[place] = 1
                         self.board[goal] = player
             else:
-                if i[1] == goal:
-                    self.move(place, i[0])
+                if last != i[1] and i[1] == goal:
+                    self.move(place, i[0], i[0])
                     player = self.board[i[0]]
                     self.board[i[0]] = 1
                     self.board[int((i[1] + i[0])/2)] = 1
@@ -202,42 +202,80 @@ class Damka:
             if i % 8 == 7:
                 print("")
     
+    def rate_boards(self, boards, winner):
+        boards1 = []
+        for i in range(len(boards)):
+            tup = self.count_troops(boards[i])
+            score = (winner / 2) * (0.92 ** (len(boards) - i - 1)) + (tup[1] - tup[0]) / 10
+            str1 = str(boards[i]).replace(',','').replace(' ','')[1:len(boards[i]) + 1]
+            boards1.append((str1, score))
+        return boards1
+                 
     def random_play(self):
         self.restart_board()
         turn = 2
         tup = (0, 0)
         counter = 0
+        boards = []
         is_tie = False
         while self.check_win() == 1 and counter < 40:
             counter += 1
             if is_tie:
+                boards = self.rate_boards(boards, 1)
+                for i in boards:
+                    if i[0] in self.dict:
+                        self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+                    else:
+                        self.dict[i[0]] = (i[1], 1)
                 return 1
             if turn == 2:
                 tup = self.random_turn(2)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1])
+                self.move(tup[0], tup[1], -1)
                 turn = 0
             if turn == 0:
                 tup = self.random_turn(0)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1])
+                self.move(tup[0], tup[1], -1)
                 turn = 2
+            boards.append(self.board[:])
+        boards = self.rate_boards(boards, self.check_win())
+        for i in boards:
+            if i[0] in self.dict:
+                self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+            else:
+                self.dict[i[0]] = (i[1], 1)
         return self.check_win()
+    
+    def run(self):
+        wins1 = 0
+        wins2 = 0
+        ties = 0
+        for _ in range(1000000):
+            winner = self.random_play()
+            if winner == 2:
+                wins1 += 1
+            elif winner == 0:
+                wins2 += 1
+            else:
+                ties += 1
+        print("player 2 won: " + str(wins1 / 1000) + "%")
+        print("player 0 won: " + str(wins2 / 1000) + "%")
+        print("a tie happened " + str(ties / 1000) + "% of the time")
+        with open('damka\damka_dict_test.csv', 'w') as output_file:
+            for key in self.dict:
+                output_file.write("%s,%s\n"%(key, self.dict[key][0]))
+        output_file.close()
 
-damka = Damka()
-damka.random_play()
-# damka.restart_board()
-# damka.board[30] = 2
-# damka.board[28] = 2
-# damka.board[51] = 1
-# damka.print_board()
-# damka.gen_all_moves(19)
-# print(damka.turn)
-# damka.move(19, 33)
-# damka.print_board()
-# tup = damka.random_turn(2)
-# print(tup)
-# damka.move(tup[0], tup[1])
-# damka.print_board()
+
+
+def main():
+    start = time.time()
+    damka = Damka()
+    damka.run()
+    print(time.time() - start)
+
+if __name__ == "__main__":
+    main()
