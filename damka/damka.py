@@ -36,6 +36,16 @@ class Damka:
             if self.board[63-i] == 0:
                 return 0
         return 1
+    
+    def count_troops(self):
+        troop0 = 0
+        troop2 = 0
+        for i in self.board:
+            if i == 0:
+                troop0 += 1
+            if i == 2:
+                troop2 += 1
+        return (troop0, troop2)
 
     def players(self, turn):
         if turn == 0:
