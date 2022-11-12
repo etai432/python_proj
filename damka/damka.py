@@ -253,7 +253,7 @@ class Damka:
         wins1 = 0
         wins2 = 0
         ties = 0
-        for _ in range(1000000):
+        for _ in range(100000):
             winner = self.random_play()
             if winner == 2:
                 wins1 += 1
@@ -276,7 +276,7 @@ def main():
     damka = Damka()
     damka.run()
     print(time.time() - start)
-    #test
+    
 
 if __name__ == "__main__":
     main()
