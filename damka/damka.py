@@ -410,6 +410,7 @@ def main():
             output_file.write("%s,%s\n"%(key, damka.dict[key][0]))
     output_file.close()
     print(time.time() - start)
+    #test
     
 
 if __name__ == "__main__":
