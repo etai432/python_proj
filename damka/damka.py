@@ -58,6 +58,21 @@ class Damka:
                 return 0
         return 1
     
+    def is_tie(self, turn):
+        self.players(turn)
+        if turn == 2:
+            for i in self.players2:
+                self.gen_all_moves(i)
+                if len(self.turn) != 0:
+                    return False
+            return True
+        if turn == 0:
+            for i in self.players0:
+                self.gen_all_moves(i)
+                if len(self.turn) != 0:
+                    return False
+            return True
+    
     def count_troops(self, board):
         troop0 = 0
         troop2 = 0
@@ -318,9 +333,9 @@ class Damka:
     def dfs(self, board, turn):
         general_score = 0
         counter = 0
-        self.board = board
+        self.board = board[:]
         win = self.check_win()
-        if win != 1:
+        if win != 1 or self.is_tie(turn):
             tup = self.count_troops(self.board)
             score1 = win/2 + (tup[1] - tup[0]) / 10
             str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
@@ -329,51 +344,59 @@ class Damka:
             else:
                 self.dict[str1] = (score1, 1)
             return win/2
-        self.players(turn)
-        if turn == 2:
-            copy_board = self.board[:]
-            for i in self.players2:
-                self.gen_all_moves(i)
-                for j in self.turn:
-                    j1 = j
-                    if isinstance(j, tuple):
-                        j1 = j[1]
-                    counter += 1
-                    self.move(i, j1, -1)
-                    tup = self.count_troops(self.board)
-                    score = self.dfs(self.board, 0)
-                    general_score += score
-                    score1 = score + (tup[1] - tup[0]) / 10
-                    str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
-                    if str1 in self.dict:
-                        self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
-                    else:
-                        self.dict[str1] = (score1, 1)
-                    self.board = copy_board[:]
         else:
-            copy_board = self.board[:]
-            for i in self.players0:
-                self.gen_all_moves(i)
-                for j in self.turn:
-                    j1 = j
-                    if isinstance(j, tuple):
-                        j1 = j[1]
-                    counter += 1
-                    self.move(i, j1, -1)
-                    tup = self.count_troops(self.board)
-                    score = self.dfs(self.board, 0)
-                    general_score += score
-                    score1 = score + (tup[1] - tup[0]) / 10
-                    str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
-                    if str1 in self.dict:
-                        self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
-                    else:
-                        self.dict[str1] = (score1, 1)
-                    self.board = copy_board[:]
-        if counter == 0:
-            return self.win/2
-        general_score /= counter
-        return general_score * 0.92
+            self.players(turn)
+            self.print_board()
+            if turn == 2:
+                copy_board = self.board[:]
+                for i in self.players2:
+                    self.gen_all_moves(i)
+                    for j in self.turn:
+                        j1 = j
+                        if isinstance(j, tuple):
+                            j1 = j[1]
+                        counter += 1
+                        self.move(i, j1, -1)
+                        if self.board == copy_board:
+                            return 1
+                        tup = self.count_troops(self.board)
+                        score = self.dfs(self.board[:], 0)
+                        general_score += score
+                        score1 = score + (tup[1] - tup[0]) / 10
+                        str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+                        if str1 in self.dict:
+                            self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
+                        else:
+                            self.dict[str1] = (score1, 1)
+                            print(len(self.dict))
+                        self.board = copy_board[:]
+            else:
+                copy_board = self.board[:]
+                for i in self.players0:
+                    self.gen_all_moves(i)
+                    for j in self.turn:
+                        j1 = j
+                        if isinstance(j, tuple):
+                            j1 = j[1]
+                        counter += 1
+                        self.move(i, j1, -1)
+                        if self.board == copy_board:
+                            return 1
+                        tup = self.count_troops(self.board)
+                        score = self.dfs(self.board[:], 2)
+                        general_score += score
+                        score1 = score + (tup[1] - tup[0]) / 10
+                        str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+                        if str1 in self.dict:
+                            self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
+                        else:
+                            self.dict[str1] = (score1, 1)
+                            print(len(self.dict))
+                        self.board = copy_board[:]
+            if counter == 0:
+                return 0.5
+            general_score /= counter
+            return general_score * 0.92
                     
 
 
@@ -384,7 +407,7 @@ def main():
     damka.dfs(damka.board, 2)
     with open('damka\damka_dict.csv', 'w') as output_file:
         for key in damka.dict:
-            output_file.write("%s,%s\n"%(key, self.dict[key][0]))
+            output_file.write("%s,%s\n"%(key, damka.dict[key][0]))
     output_file.close()
     print(time.time() - start)
     
