@@ -13,7 +13,7 @@ class Damka:
         self.dict = {}
     
     def restart_board(self):
-        self.board = [1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1]
+        self.board = [3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 3, 1, 3, 1, 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 3]
 
     def random_turn(self, player):
         counter = 0
@@ -207,7 +207,7 @@ class Damka:
         for i in range(len(boards)):
             tup = self.count_troops(boards[i])
             score = (winner / 2) * (0.92 ** (len(boards) - i - 1)) + (tup[1] - tup[0]) / 10
-            str1 = str(boards[i]).replace(',','').replace(' ','')[1:len(boards[i]) + 1]
+            str1 = str(boards[i]).replace('3','').replace(',','').replace(' ','')[1:65]
             boards1.append((str1, score))
         return boards1
                  
@@ -251,6 +251,7 @@ class Damka:
     
     def run(self):
         wins1 = 0
+
         wins2 = 0
         ties = 0
         for _ in range(100000):
@@ -268,13 +269,53 @@ class Damka:
             for key in self.dict:
                 output_file.write("%s,%s\n"%(key, self.dict[key][0]))
         output_file.close()
+    
+    def random_play_without_saving(self):
+        self.dict = {row[0]: row[1] for _, row in pd.read_csv(r"damka/damka_dict_test.csv").iterrows()}
+        self.restart_board()
+        turn = 2
+        tup = (0, 0)
+        counter = 0
+        is_tie = False
+        found = 0
+        not_found = 0
+        while self.check_win() == 1 and counter < 40:
+            counter += 1
+            if is_tie:
+                return (found, not_found)
+            if turn == 2:
+                tup = self.random_turn(2)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.move(tup[0], tup[1], -1)
+                turn = 0
+            if turn == 0:
+                tup = self.random_turn(0)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.move(tup[0], tup[1], -1)
+                turn = 2
+            str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:65]
+            if str1 in self.dict:
+                found += 1
+            else:
+                not_found += 1
+        return (found, not_found)
 
+    def find_percentage(self):
+        found = 0
+        not_found = 0
+        for i in range(100000):
+            tup = self.random_play_without_saving()
+            found += tup[0]
+            not_found += tup[1]
+        print("percentage of found boards: ", found / (found + not_found))
 
 
 def main():
     start = time.time()
     damka = Damka()
-    damka.run()
+    damka.find_percentage()
     print(time.time() - start)
     
 
