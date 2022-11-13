@@ -1,6 +1,7 @@
 import random
 import time
 import csv
+import pandas as pd
 
 class Damka:
     def __init__(self):
@@ -207,7 +208,7 @@ class Damka:
         for i in range(len(boards)):
             tup = self.count_troops(boards[i])
             score = (winner / 2) * (0.92 ** (len(boards) - i - 1)) + (tup[1] - tup[0]) / 10
-            str1 = str(boards[i]).replace('3','').replace(',','').replace(' ','')[1:65]
+            str1 = str(boards[i]).replace('3','').replace(',','').replace(' ','')[1:33]
             boards1.append((str1, score))
         return boards1
                  
@@ -251,10 +252,9 @@ class Damka:
     
     def run(self):
         wins1 = 0
-
         wins2 = 0
         ties = 0
-        for _ in range(100000):
+        for _ in range(10000000):
             winner = self.random_play()
             if winner == 2:
                 wins1 += 1
@@ -265,13 +265,12 @@ class Damka:
         print("player 2 won: " + str(wins1 / 1000) + "%")
         print("player 0 won: " + str(wins2 / 1000) + "%")
         print("a tie happened " + str(ties / 1000) + "% of the time")
-        with open('damka\damka_dict_test.csv', 'w') as output_file:
+        with open('damka\damka_dict.csv', 'w') as output_file:
             for key in self.dict:
                 output_file.write("%s,%s\n"%(key, self.dict[key][0]))
         output_file.close()
     
     def random_play_without_saving(self):
-        self.dict = {row[0]: row[1] for _, row in pd.read_csv(r"damka/damka_dict_test.csv").iterrows()}
         self.restart_board()
         turn = 2
         tup = (0, 0)
@@ -295,27 +294,98 @@ class Damka:
                     is_tie = True
                 self.move(tup[0], tup[1], -1)
                 turn = 2
-            str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:65]
-            if str1 in self.dict:
-                found += 1
-            else:
-                not_found += 1
+            str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+            if counter > 5:
+                if str1 in self.dict.keys():
+                    found += 1
+                else:
+                    not_found += 1
         return (found, not_found)
 
     def find_percentage(self):
+        with open('damka\damka_dict_test.csv', mode='r') as infile:
+            reader = csv.reader(infile)
+            self.dict = {rows[0]:rows[1] for rows in reader}
         found = 0
         not_found = 0
         for i in range(100000):
             tup = self.random_play_without_saving()
             found += tup[0]
             not_found += tup[1]
-        print("percentage of found boards: ", found / (found + not_found))
+        print("percentage of found boards: ", found / (found + not_found)*100, "%")
+        print("found: ", found)
+    
+    def dfs(self, board, turn):
+        general_score = 0
+        counter = 0
+        self.board = board
+        win = self.check_win()
+        if win != 1:
+            tup = self.count_troops(self.board)
+            score1 = win/2 + (tup[1] - tup[0]) / 10
+            str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+            if str1 in self.dict:
+                self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
+            else:
+                self.dict[str1] = (score1, 1)
+            return win/2
+        self.players(turn)
+        if turn == 2:
+            copy_board = self.board[:]
+            for i in self.players2:
+                self.gen_all_moves(i)
+                for j in self.turn:
+                    j1 = j
+                    if isinstance(j, tuple):
+                        j1 = j[1]
+                    counter += 1
+                    self.move(i, j1, -1)
+                    tup = self.count_troops(self.board)
+                    score = self.dfs(self.board, 0)
+                    general_score += score
+                    score1 = score + (tup[1] - tup[0]) / 10
+                    str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
+                    else:
+                        self.dict[str1] = (score1, 1)
+                    self.board = copy_board[:]
+        else:
+            copy_board = self.board[:]
+            for i in self.players0:
+                self.gen_all_moves(i)
+                for j in self.turn:
+                    j1 = j
+                    if isinstance(j, tuple):
+                        j1 = j[1]
+                    counter += 1
+                    self.move(i, j1, -1)
+                    tup = self.count_troops(self.board)
+                    score = self.dfs(self.board, 0)
+                    general_score += score
+                    score1 = score + (tup[1] - tup[0]) / 10
+                    str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
+                    else:
+                        self.dict[str1] = (score1, 1)
+                    self.board = copy_board[:]
+        if counter == 0:
+            return self.win/2
+        general_score /= counter
+        return general_score * 0.92
+                    
 
 
 def main():
     start = time.time()
     damka = Damka()
-    damka.find_percentage()
+    damka.restart_board()
+    damka.dfs(damka.board, 2)
+    with open('damka\damka_dict.csv', 'w') as output_file:
+        for key in damka.dict:
+            output_file.write("%s,%s\n"%(key, self.dict[key][0]))
+    output_file.close()
     print(time.time() - start)
     
 
