@@ -331,14 +331,14 @@ class Damka:
         print("found: ", found)
     
     def dfs(self, board, turn): #TODO mark visited boards in self.dict- add a rating and saving to dict
-        # tup = self.count_troops(self.board)
-        # score = self.dfs(self.board[:], 2)
-        # general_score += score
-        # score1 = score + (tup[1] - tup[0]) / 10
         # str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
         # if str1 in self.dict:
         #       return self.dict[str1] * 0.92
         # else:
+        #     tup = self.count_troops(self.board)
+        #     score = self.dfs(self.board[:], 2)
+        #     general_score += score
+        #     score1 = score + (tup[1] - tup[0]) / 10
         #     self.dict[str1] = score1
         if self.is_tie(turn, board):
             return 0.5
