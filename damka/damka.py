@@ -50,25 +50,25 @@ class Damka:
                     return (-1, -1)
             return (place, random.choice(self.turn))
 
-    def check_win(self):
+    def check_win(self, board):
         for i in range(8):
-            if self.board[i] == 2:
+            if board[i] == 2:
                 return 2
-            if self.board[63-i] == 0:
+            if board[63-i] == 0:
                 return 0
         return 1
     
-    def is_tie(self, turn):
-        self.players(turn)
+    def is_tie(self, turn, board):
+        self.players(turn, board)
         if turn == 2:
             for i in self.players2:
-                self.gen_all_moves(i)
+                self.gen_all_moves(i, board)
                 if len(self.turn) != 0:
                     return False
             return True
         if turn == 0:
             for i in self.players0:
-                self.gen_all_moves(i)
+                self.gen_all_moves(i, board)
                 if len(self.turn) != 0:
                     return False
             return True
@@ -83,128 +83,128 @@ class Damka:
                 troop2 += 1
         return (troop0, troop2)
 
-    def players(self, turn):
+    def players(self, turn, board):
         if turn == 0:
             for i in range(64):
-                if self.board[i] == 0:
+                if board[i] == 0:
                     self.players0.append(i)
         if turn == 2:
             for i in range(64):
-                if self.board[i] == 2:
+                if board[i] == 2:
                     self.players2.append(i)
             
-    def gen_moves(self, place):
+    def gen_moves(self, place, board):
         self.moves = []
-        if self.board[place] == 0:
-            if place < 57 and place % 8 != 0 and self.board[place + 7] == 1:
+        if board[place] == 0:
+            if place < 57 and place % 8 != 0 and board[place + 7] == 1:
                 self.moves.append(place + 7)
-            if place < 55 and place % 8 != 7 and self.board[place + 9] == 1:
+            if place < 55 and place % 8 != 7 and board[place + 9] == 1:
                 self.moves.append(place + 9)
-        if self.board[place] == 2:
-            if place > 8 and place % 8 != 0 and self.board[place - 9] == 1:
+        if board[place] == 2:
+            if place > 8 and place % 8 != 0 and board[place - 9] == 1:
                 self.moves.append(place - 9)
-            if place > 6 and place % 8 != 7 and self.board[place - 7] == 1:
+            if place > 6 and place % 8 != 7 and board[place - 7] == 1:
                 self.moves.append(place - 7)
 
-    def gen_kill(self, place):
+    def gen_kill(self, place, board):
         self.kills = []
-        if self.board[place] == 0:
-            if place < 50 and place % 8 != 0 and place % 8 != 1 and self.board[place + 7] == 2 and self.board[place + 14] == 1:
+        if board[place] == 0:
+            if place < 50 and place % 8 != 0 and place % 8 != 1 and board[place + 7] == 2 and board[place + 14] == 1:
                 self.kills.append(place + 14)
-            if place < 46 and place % 8 != 7 and place % 8 != 6 and self.board[place + 9] == 2 and self.board[place + 18] == 1:
+            if place < 46 and place % 8 != 7 and place % 8 != 6 and board[place + 9] == 2 and board[place + 18] == 1:
                 self.kills.append(place + 18)
-        if self.board[place] == 2:
-            if place > 17 and place % 8 != 0 and place % 8 != 1 and self.board[place - 9] == 0 and self.board[place - 18] == 1:
+        if board[place] == 2:
+            if place > 17 and place % 8 != 0 and place % 8 != 1 and board[place - 9] == 0 and board[place - 18] == 1:
                 self.kills.append(place - 18)
-            if place > 13 and place % 8 != 7 and place % 8 != 6 and self.board[place - 7] == 0 and self.board[place - 14] == 1:
+            if place > 13 and place % 8 != 7 and place % 8 != 6 and board[place - 7] == 0 and board[place - 14] == 1:
                 self.kills.append(place - 14)
     
-    def gen_more_kills(self, place, kill_list):
+    def gen_more_kills(self, place, kill_list, board):
         doubles = []
         extra = []
         for i in kill_list:
-            player = self.board[place]
-            self.board[i] = player
-            self.board[place] = 1
-            self.board[int((i + place)/2)] = 1
+            player = board[place]
+            board[i] = player
+            board[place] = 1
+            board[int((i + place)/2)] = 1
             if player == 0:
-                if i < 50 and i % 8 != 0 and i % 8 != 1 and self.board[i + 7] == 2 and self.board[i + 14] == 1:
+                if i < 50 and i % 8 != 0 and i % 8 != 1 and board[i + 7] == 2 and board[i + 14] == 1:
                     doubles.append((i, i + 14))
-                    extra = self.gen_more_kills(i, [i + 14])
+                    extra = self.gen_more_kills(i, [i + 14], board)
                     for j in extra:
                         doubles.append(j)
-                if i < 46 and i % 8 != 7 and i * 8 != 6 and self.board[i + 9] == 2 and self.board[i + 18] == 1:
+                if i < 46 and i % 8 != 7 and i * 8 != 6 and board[i + 9] == 2 and board[i + 18] == 1:
                     doubles.append((i, i + 18))
-                    extra = self.gen_more_kills(i, [i + 18])
+                    extra = self.gen_more_kills(i, [i + 18], board)
                     for j in extra:
                         doubles.append(j)
-                if i > 17 and i % 8 != 0 and i % 8 != 1 and self.board[i - 9] == 2 and self.board[i - 18] == 1:
+                if i > 17 and i % 8 != 0 and i % 8 != 1 and board[i - 9] == 2 and board[i - 18] == 1:
                     doubles.append((i, i - 18))
-                    extra = self.gen_more_kills(i, [i - 18])
+                    extra = self.gen_more_kills(i, [i - 18], board)
                     for j in extra:
                         doubles.append(j)
-                if i > 13 and i % 8 != 7 and i * 8 != 6 and self.board[i - 7] == 2 and self.board[i - 14] == 1:
+                if i > 13 and i % 8 != 7 and i * 8 != 6 and board[i - 7] == 2 and board[i - 14] == 1:
                     doubles.append((i, i - 14))
-                    extra = self.gen_more_kills(i, [i - 14])
+                    extra = self.gen_more_kills(i, [i - 14], board)
                     for j in extra:
                         doubles.append(j)
             if player == 2:
-                if i < 50 and i % 8 != 0 and i % 8 != 1 and self.board[i + 7] == 0 and self.board[i + 14] == 1:
+                if i < 50 and i % 8 != 0 and i % 8 != 1 and board[i + 7] == 0 and board[i + 14] == 1:
                     doubles.append((i, i + 14))
-                    extra = self.gen_more_kills(i, [i + 14])
+                    extra = self.gen_more_kills(i, [i + 14], board)
                     for j in extra:
                         doubles.append(j)
-                if i < 46 and i % 8 != 7 and i * 8 != 6 and self.board[i + 9] == 0 and self.board[i + 18] == 1:
+                if i < 46 and i % 8 != 7 and i * 8 != 6 and board[i + 9] == 0 and board[i + 18] == 1:
                     doubles.append((i, i + 18))
-                    extra = self.gen_more_kills(i, [i + 18])
+                    extra = self.gen_more_kills(i, [i + 18], board)
                     for j in extra:
                         doubles.append(j)
-                if i > 17 and i % 8 != 0 and i % 8 != 1 and self.board[i - 9] == 0 and self.board[i - 18] == 1:
+                if i > 17 and i % 8 != 0 and i % 8 != 1 and board[i - 9] == 0 and board[i - 18] == 1:
                     doubles.append((i, i - 18))
-                    extra = self.gen_more_kills(i, [i - 18])
+                    extra = self.gen_more_kills(i, [i - 18], board)
                     for j in extra:
                         doubles.append(j)
-                if i > 13 and i % 8 != 7 and i * 8 != 6 and self.board[i - 7] == 0 and self.board[i - 14] == 1:
+                if i > 13 and i % 8 != 7 and i * 8 != 6 and board[i - 7] == 0 and board[i - 14] == 1:
                     doubles.append((i, i - 14))
-                    extra = self.gen_more_kills(i, [i - 14])
+                    extra = self.gen_more_kills(i, [i - 14], board)
                     for j in extra:
                         doubles.append(j)
-            self.board[i] = 1
-            self.board[place] = player
-            self.board[int((i + place)/2)] = abs(2-player)
+            board[i] = 1
+            board[place] = player
+            board[int((i + place)/2)] = abs(2-player)
         return doubles
 
-    def gen_all_moves(self, place):
+    def gen_all_moves(self, place, board):
         self.turn = []
-        self.gen_moves(place)
+        self.gen_moves(place, board)
         for i in self.moves:
             self.turn.append(i)
-        self.gen_kill(place)
+        self.gen_kill(place, board)
         for i in self.kills:
             self.turn.append(i)
-        doubles = self.gen_more_kills(place, self.kills)
+        doubles = self.gen_more_kills(place, self.kills, board)
         for i in doubles:
             self.turn.append(i)
     
-    def move(self, place, goal, last):
+    def move(self, place, goal, last, board):
         for i in self.turn:
             if isinstance(i, int):
                 if i == goal:
-                    player = self.board[place]
+                    player = board[place]
                     if abs(goal - place) > 10:
-                        self.board[place] = 1
-                        self.board[int((goal + place)/2)] = 1
-                        self.board[goal] = player
+                        board[place] = 1
+                        board[int((goal + place)/2)] = 1
+                        board[goal] = player
                     else:
-                        self.board[place] = 1
-                        self.board[goal] = player
+                        board[place] = 1
+                        board[goal] = player
             else:
                 if last != i[1] and i[1] == goal:
-                    self.move(place, i[0], i[0])
-                    player = self.board[i[0]]
-                    self.board[i[0]] = 1
-                    self.board[int((i[1] + i[0])/2)] = 1
-                    self.board[i[1]] = player
+                    self.move(place, i[0], i[0], board)
+                    player = board[i[0]]
+                    board[i[0]] = 1
+                    board[int((i[1] + i[0])/2)] = 1
+                    board[i[1]] = player
 
     def print_board(self):
         print("the board: ")
@@ -331,72 +331,58 @@ class Damka:
         print("found: ", found)
     
     def dfs(self, board, turn):
-        general_score = 0
+        if self.is_tie(turn, board):
+            str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
+            if str1 not in self.dict:
+                tup = self.count_troops(board)
+                self.dict[str1] = 0.5 + (tup[1] - tup[0]) / 10
+            return 0.5 * 0.92
+        win = self.check_win(board)
+        if win != 1:
+            str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
+            if str1 not in self.dict:
+                tup = self.count_troops(board)
+                self.dict[str1] = win / 2 + (tup[1] - tup[0]) / 10
+            return win / 2 * 0.92
+        total_score = 0
         counter = 0
-        self.board = board[:]
-        win = self.check_win()
-        if win != 1 or self.is_tie(turn):
-            tup = self.count_troops(self.board)
-            score1 = win/2 + (tup[1] - tup[0]) / 10
-            str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
-            if str1 in self.dict:
-                self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
-            else:
-                self.dict[str1] = (score1, 1)
-            return win/2
-        else:
-            self.players(turn)
-            self.print_board()
-            if turn == 2:
-                copy_board = self.board[:]
-                for i in self.players2:
-                    self.gen_all_moves(i)
-                    for j in self.turn:
-                        j1 = j
-                        if isinstance(j, tuple):
-                            j1 = j[1]
-                        counter += 1
-                        self.move(i, j1, -1)
-                        if self.board == copy_board:
-                            return 1
-                        tup = self.count_troops(self.board)
-                        score = self.dfs(self.board[:], 0)
-                        general_score += score
+        if turn == 2:
+            self.players(2, board)
+            for player in self.players2:
+                self.gen_all_moves(player, board)
+                for move in self.turn:
+                    copy_board = board[:]
+                    self.move(player, move, -1, copy_board)
+                    counter += 1
+                    str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        return self.dict[str1] * 0.92
+                    else:
+                        tup = self.count_troops(copy_board)
+                        score = self.dfs(copy_board[:], 0)
+                        total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
-                        str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
-                        if str1 in self.dict:
-                            self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
-                        else:
-                            self.dict[str1] = (score1, 1)
-                            print(len(self.dict))
-                        self.board = copy_board[:]
-            else:
-                copy_board = self.board[:]
-                for i in self.players0:
-                    self.gen_all_moves(i)
-                    for j in self.turn:
-                        j1 = j
-                        if isinstance(j, tuple):
-                            j1 = j[1]
-                        counter += 1
-                        self.move(i, j1, -1)
-                        if self.board == copy_board:
-                            return 1
-                        tup = self.count_troops(self.board)
-                        score = self.dfs(self.board[:], 2)
-                        general_score += score
+                        self.dict[str1] = score1
+        if turn == 0:
+            self.players(0, board)
+            for player in self.players0:
+                self.gen_all_moves(player, board)
+                for move in self.turn:
+                    copy_board = board[:]
+                    self.move(player, move, -1, copy_board)
+                    counter += 1
+                    str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        return self.dict[str1] * 0.92
+                    else:
+                        tup = self.count_troops(copy_board)
+                        score = self.dfs(copy_board[:], 2)
+                        total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
-                        str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
-                        if str1 in self.dict:
-                            self.dict[str1] = ((self.dict[str1][0] * self.dict[str1][1] + score1) / (self.dict[str1][1] + 1), self.dict[str1][1] + 1)
-                        else:
-                            self.dict[str1] = (score1, 1)
-                            print(len(self.dict))
-                        self.board = copy_board[:]
-            if counter == 0:
-                return 0.5
-            general_score /= counter
-            return general_score * 0.92
+                        self.dict[str1] = score1
+        self.board = copy_board
+        self.print_board()
+        return total_score/counter * 0.92         
                     
 
 
@@ -410,7 +396,6 @@ def main():
             output_file.write("%s,%s\n"%(key, damka.dict[key][0]))
     output_file.close()
     print(time.time() - start)
-    #test
     
 
 if __name__ == "__main__":
