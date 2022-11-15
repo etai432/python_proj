@@ -20,31 +20,31 @@ class Damka:
         counter = 0
         players = self.count_troops(self.board)
         if player == 0:
-            self.players(player)
+            self.players(player, self.board)
             self.turn = []
             while(len(self.turn) == 0):
                 place = random.choice(self.players0)
-                self.gen_all_moves(place)
+                self.gen_all_moves(place, self.board)
                 counter += 1
                 if counter > players[0]:
                     for i in range(64):
                         if self.board[i] == 0:
-                            self.gen_all_moves(i)
+                            self.gen_all_moves(i, self.board)
                             if len(self.turn) > 0:
                                 return(place, random.choice(self.turn))
                     return (-1, -1)
             return (place, random.choice(self.turn))
         if player == 2:
-            self.players(player)
+            self.players(player, self.board)
             self.turn = []
             while(len(self.turn) == 0):
                 place = random.choice(self.players2)
-                self.gen_all_moves(place)
+                self.gen_all_moves(place, self.board)
                 counter += 1
                 if counter > players[1]:
                     for i in range(64):
                         if self.board[i] == 2:
-                            self.gen_all_moves(i)
+                            self.gen_all_moves(i, self.board)
                             if len(self.turn) > 0:
                                 return(place, random.choice(self.turn))
                     return (-1, -1)
@@ -234,7 +234,7 @@ class Damka:
         counter = 0
         boards = []
         is_tie = False
-        while self.check_win() == 1 and counter < 40:
+        while self.check_win(self.board) == 1 and counter < 40:
             counter += 1
             if is_tie:
                 boards = self.rate_boards(boards, 1)
@@ -248,22 +248,22 @@ class Damka:
                 tup = self.random_turn(2)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1], -1)
+                self.move(tup[0], tup[1], -1, self.board)
                 turn = 0
             if turn == 0:
                 tup = self.random_turn(0)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1], -1)
+                self.move(tup[0], tup[1], -1, self.board)
                 turn = 2
             boards.append(self.board[:])
-        boards = self.rate_boards(boards, self.check_win())
+        boards = self.rate_boards(boards, self.check_win(self.board))
         for i in boards:
             if i[0] in self.dict:
                 self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
             else:
                 self.dict[i[0]] = (i[1], 1)
-        return self.check_win()
+        return self.check_win(self.board)
     
     def run(self):
         wins1 = 0
@@ -293,7 +293,7 @@ class Damka:
         is_tie = False
         found = 0
         not_found = 0
-        while self.check_win() == 1 and counter < 40:
+        while self.check_win(self.board) == 1 and counter < 40:
             counter += 1
             if is_tie:
                 return (found, not_found)
@@ -301,13 +301,13 @@ class Damka:
                 tup = self.random_turn(2)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1], -1)
+                self.move(tup[0], tup[1], -1, self.board)
                 turn = 0
             if turn == 0:
                 tup = self.random_turn(0)
                 if tup == (-1, -1):
                     is_tie = True
-                self.move(tup[0], tup[1], -1)
+                self.move(tup[0], tup[1], -1, self.board)
                 turn = 2
             str1 = str(self.board).replace('3','').replace(',','').replace(' ','')[1:33]
             if counter > 5:
@@ -352,7 +352,10 @@ class Damka:
                 self.gen_all_moves(player, board)
                 for move in self.turn:
                     copy_board = board[:]
-                    self.move(player, move, -1, copy_board)
+                    if isinstance(move, tuple):
+                        self.move(player, move[1], -1, copy_board)
+                    else:
+                        self.move(player, move, -1, copy_board)
                     counter += 1
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
@@ -369,7 +372,10 @@ class Damka:
                 self.gen_all_moves(player, board)
                 for move in self.turn:
                     copy_board = board[:]
-                    self.move(player, move, -1, copy_board)
+                    if isinstance(move, tuple):
+                        self.move(player, move[1], -1, copy_board)
+                    else:
+                        self.move(player, move, -1, copy_board)
                     counter += 1
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
@@ -380,8 +386,6 @@ class Damka:
                         total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
                         self.dict[str1] = score1
-        self.board = copy_board
-        self.print_board()
         return total_score/counter * 0.92         
                     
 
