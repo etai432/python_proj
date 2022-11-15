@@ -62,15 +62,15 @@ class Damka:
         if turn == 2:
             for i in self.players2:
                 self.gen_all_moves(i, board)
-                if len(self.turn) != 0:
-                    return False
-            return True
+                if len(self.turn) == 0:
+                    return True
+            return False
         if turn == 0:
             for i in self.players0:
                 self.gen_all_moves(i, board)
-                if len(self.turn) != 0:
-                    return False
-            return True
+                if len(self.turn) == 0:
+                    return True
+            return False
     
     def count_troops(self, board):
         troop0 = 0
