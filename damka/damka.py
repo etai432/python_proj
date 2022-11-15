@@ -1,7 +1,6 @@
 import random
 import time
 import csv
-import pandas as pd
 
 class Damka:
     def __init__(self):
