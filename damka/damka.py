@@ -126,48 +126,26 @@ class Damka:
             board[i] = player
             board[place] = 1
             board[int((i + place)/2)] = 1
-            if player == 0:
-                if i < 50 and i % 8 != 0 and i % 8 != 1 and board[i + 7] == 2 and board[i + 14] == 1:
-                    doubles.append((i, i + 14))
-                    extra = self.gen_more_kills(i, [i + 14], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i < 46 and i % 8 != 7 and i * 8 != 6 and board[i + 9] == 2 and board[i + 18] == 1:
-                    doubles.append((i, i + 18))
-                    extra = self.gen_more_kills(i, [i + 18], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i > 17 and i % 8 != 0 and i % 8 != 1 and board[i - 9] == 2 and board[i - 18] == 1:
-                    doubles.append((i, i - 18))
-                    extra = self.gen_more_kills(i, [i - 18], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i > 13 and i % 8 != 7 and i * 8 != 6 and board[i - 7] == 2 and board[i - 14] == 1:
-                    doubles.append((i, i - 14))
-                    extra = self.gen_more_kills(i, [i - 14], board)
-                    for j in extra:
-                        doubles.append(j)
-            if player == 2:
-                if i < 50 and i % 8 != 0 and i % 8 != 1 and board[i + 7] == 0 and board[i + 14] == 1:
-                    doubles.append((i, i + 14))
-                    extra = self.gen_more_kills(i, [i + 14], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i < 46 and i % 8 != 7 and i * 8 != 6 and board[i + 9] == 0 and board[i + 18] == 1:
-                    doubles.append((i, i + 18))
-                    extra = self.gen_more_kills(i, [i + 18], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i > 17 and i % 8 != 0 and i % 8 != 1 and board[i - 9] == 0 and board[i - 18] == 1:
-                    doubles.append((i, i - 18))
-                    extra = self.gen_more_kills(i, [i - 18], board)
-                    for j in extra:
-                        doubles.append(j)
-                if i > 13 and i % 8 != 7 and i * 8 != 6 and board[i - 7] == 0 and board[i - 14] == 1:
-                    doubles.append((i, i - 14))
-                    extra = self.gen_more_kills(i, [i - 14], board)
-                    for j in extra:
-                        doubles.append(j)
+            if i < 50 and i % 8 != 0 and i % 8 != 1 and board[i + 7] == 2 and board[i + 14] == 1:
+                doubles.append((i, i + 14))
+                extra = self.gen_more_kills(i, [i + 14], board)
+                for j in extra:
+                    doubles.append(j)
+            if i < 46 and i % 8 != 7 and i * 8 != 6 and board[i + 9] == 2 and board[i + 18] == 1:
+                doubles.append((i, i + 18))
+                extra = self.gen_more_kills(i, [i + 18], board)
+                for j in extra:
+                    doubles.append(j)
+            if i > 17 and i % 8 != 0 and i % 8 != 1 and board[i - 9] == 2 and board[i - 18] == 1:
+                doubles.append((i, i - 18))
+                extra = self.gen_more_kills(i, [i - 18], board)
+                for j in extra:
+                    doubles.append(j)
+            if i > 13 and i % 8 != 7 and i * 8 != 6 and board[i - 7] == 2 and board[i - 14] == 1:
+                doubles.append((i, i - 14))
+                extra = self.gen_more_kills(i, [i - 14], board)
+                for j in extra:
+                    doubles.append(j)
             board[i] = 1
             board[place] = player
             board[int((i + place)/2)] = abs(2-player)
