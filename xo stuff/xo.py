@@ -19,12 +19,12 @@ class TicTacToe:
     def restart_board(self):
         self.board = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 
-    def check_win(self, last_index, turn):
-        if self.board[last_index % 3] == self.board[last_index % 3 + 3] == self.board[last_index % 3 + 6] != 1:
+    def check_win(self, board, last_index, turn):
+        if board[last_index % 3] == board[last_index % 3 + 3] == board[last_index % 3 + 6] != 1:
             return turn
-        if self.board[last_index // 3 * 3] == self.board[last_index // 3 * 3 + 1] == self.board[last_index // 3 * 3 + 2] != 1:
+        if board[last_index // 3 * 3] == board[last_index // 3 * 3 + 1] == board[last_index // 3 * 3 + 2] != 1:
             return turn
-        if (self.board[0] == self.board[4] == self.board[8] or self.board[2] == self.board[4] == self.board[6]) and self.board[4] != 1:
+        if (board[0] == board[4] == board[8] or board[2] == board[4] == board[6]) and board[4] != 1:
             return turn
 
     def empty_space(self):
@@ -247,6 +247,9 @@ class TicTacToe:
             for key in self.dict:
                 output_file.write("%s,%s\n" % (key, self.dict[key][0]))
         output_file.close()
+    
+    def dfs(self, board, turn):
+        
 
 
 def main():
