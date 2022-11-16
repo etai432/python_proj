@@ -308,12 +308,6 @@ class Damka:
         print("found: ", found)
     
     def dfs(self, board, turn):
-        if self.is_tie(turn, board):
-            str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
-            if str1 not in self.dict:
-                tup = self.count_troops(board)
-                self.dict[str1] = 0.5 + (tup[1] - tup[0]) / 10
-            return 0.5 * 0.92
         win = self.check_win(board)
         if win != 1:
             str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
@@ -321,6 +315,7 @@ class Damka:
                 tup = self.count_troops(board)
                 self.dict[str1] = win / 2 + (tup[1] - tup[0]) / 10
             return win / 2 * 0.92
+        bool1 = False
         total_score = 0
         counter = 0
         if turn == 2:
@@ -334,6 +329,8 @@ class Damka:
                     else:
                         self.move(player, move, -1, copy_board)
                     counter += 1
+                    if copy_board != board:
+                        bool1 = True
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
                         return self.dict[str1] * 0.92
@@ -354,6 +351,8 @@ class Damka:
                     else:
                         self.move(player, move, -1, copy_board)
                     counter += 1
+                    if copy_board != board:
+                        bool1 = True
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
                         return self.dict[str1] * 0.92
@@ -363,6 +362,12 @@ class Damka:
                         total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
                         self.dict[str1] = score1
+        if not bool1:
+            str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
+            if str1 not in self.dict:
+                tup = self.count_troops(board)
+                self.dict[str1] = 0.5 + (tup[1] - tup[0]) / 10
+            return 0.5 * 0.92
         return total_score/counter * 0.92         
                     
 
