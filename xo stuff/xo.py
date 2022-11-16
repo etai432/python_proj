@@ -10,9 +10,9 @@ class TicTacToe:
     def __init__(self):
         self.board = []
         self.empty = []
-        self.dict = {row[0]: row[1]
-                     for _, row in pd.read_csv(r"xo stuff/xo_dict.csv").iterrows()}
-        # self.dict = {}
+        # self.dict = {row[0]: row[1]
+        #              for _, row in pd.read_csv(r"xo stuff/xo_dict.csv").iterrows()}
+        self.dict = {}
         self.gamma = 0.9
         self.alfa = 20
 
@@ -26,19 +26,20 @@ class TicTacToe:
             return turn
         if (board[0] == board[4] == board[8] or board[2] == board[4] == board[6]) and board[4] != 1:
             return turn
+        return 1
 
-    def empty_space(self):
+    def empty_space(self, board):
         self.empty = []
         for i in range(9):
-            if self.board[i] == 1:
+            if board[i] == 1:
                 self.empty.append(i + 1)
 
     def computer_turn(self):
-        self.empty_space()
+        self.empty_space(self.board)
         return random.choice(self.empty)
 
     def player_turn(self):
-        self.empty_space()
+        self.empty_space(self.board)
         input1 = int(input("please pick a spot from the empty spaces: "))
         while input1 not in self.empty:
             input1 = int(input("please pick a spot from the empty spaces: "))
@@ -52,15 +53,14 @@ class TicTacToe:
             elif self.board[i] == 0:
                 print("|O|", end="")
             else:
-                print("|" + str(i + 1) + "|", end="")
+                print("| |", end="")
             if i % 3 == 2:
                 print("")
 
     def rate_boards(self, game_boards, winner):
         list1 = []
         for i in range(len(game_boards)):
-            list1.append((str(np.array(
-                game_boards[i])), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
+            list1.append(((str(game_boards[i]).replace(',', '').replace(' ', '')[1:10]), (winner / 2) * (self.gamma ** (len(game_boards) - i - 1))))
         return list1
 
     def play_one_game(self):  # pc = x, player = o
@@ -77,7 +77,7 @@ class TicTacToe:
             self.board[last_index] = 2
             turns += 1
             self.print_board()
-            if self.check_win(last_index, turn) == 2:
+            if self.check_win(self.board, last_index, turn) == 2:
                 print("computer won!")
                 self.alfa = temp_alfa
                 return 2
@@ -90,7 +90,7 @@ class TicTacToe:
             self.board[last_index] = 0
             turns += 1
             self.print_board()
-            if self.check_win(last_index, turn) == 1:
+            if self.check_win(self.board, last_index, turn) == 1:
                 print("player won!")
                 self.alfa = temp_alfa
                 return 0
@@ -105,7 +105,7 @@ class TicTacToe:
             self.board[last_index] = 2
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4 and self.check_win(last_index, turn) == 2:
+            if turns > 4 and self.check_win(self.board, last_index, turn) == 2:
                 game_boards = self.rate_boards(game_boards, 2)
                 for i in game_boards:
                     if i[0] in self.dict:
@@ -128,7 +128,7 @@ class TicTacToe:
             self.board[last_index] = 0
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4 and self.check_win(last_index, turn) == 1:
+            if turns > 4 and self.check_win(self.board, last_index, turn) == 1:
                 game_boards = self.rate_boards(game_boards, 0)
                 for i in game_boards:
                     if i[0] in self.dict:
@@ -141,14 +141,14 @@ class TicTacToe:
     def choose_next_turn(self, player):
         if random.randint(1, 100) <= self.alfa:
             return self.computer_turn()
-        self.empty_space()
+        self.empty_space(self.board)
         max1 = -1
         min1 = 2
         index = -1
         for i in self.empty:
             copy_board = self.board[:]
             copy_board[i - 1] = player
-            copy_board = str(np.array(copy_board))
+            copy_board = str(copy_board).replace(',', '').replace(' ', '')[1:10]
             if copy_board in self.dict:
                 if player == 2:
                     if max1 < self.dict[copy_board]:
@@ -175,7 +175,7 @@ class TicTacToe:
             self.board[last_index] = 2
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4 and self.check_win(last_index, turn) == 2:
+            if turns > 4 and self.check_win(self.board, last_index, turn) == 2:
                 game_boards = self.rate_boards(game_boards, 2)
                 for i in game_boards:
                     if i[0] in self.dict:
@@ -198,7 +198,7 @@ class TicTacToe:
             self.board[last_index] = 0
             turns += 1
             game_boards.append(self.board[:])
-            if turns > 4 and self.check_win(last_index, turn) == 1:
+            if turns > 4 and self.check_win(self.board, last_index, turn) == 1:
                 game_boards = self.rate_boards(game_boards, 0)
                 for i in game_boards:
                     if i[0] in self.dict:
@@ -248,19 +248,59 @@ class TicTacToe:
                 output_file.write("%s,%s\n" % (key, self.dict[key][0]))
         output_file.close()
     
-    def dfs(self, board, turn):
+    def dfs(self, board, turn, last_index):
+        self.empty_space(board)
+        if len(self.empty) == 0:
+            return 0.5
+        win = abs(self.check_win(board, last_index, turn) - 2)
+        if win != 1:
+            return win / 2
+        total_score = 0
+        counter = 0
+        if turn == 2:
+            for i in self.empty:
+                copy_board = board[:]
+                copy_board[i-1] = 2
+                counter += 1
+                str1 = str(copy_board).replace(',', '').replace(' ', '')[1:10]
+                if str1 in self.dict:
+                    total_score += self.dict[str1]
+                else:
+                    score = self.dfs(copy_board[:], 0, i-1)
+                    total_score += score
+                    self.dict[str1] = score
+        if turn == 0:
+            for i in self.empty:
+                copy_board = board[:]
+                copy_board[i-1] = 0
+                counter += 1
+                str1 = str(copy_board).replace(',', '').replace(' ', '')[1:10]
+                if str1 in self.dict:
+                    total_score += self.dict[str1]
+                else:
+                    score = self.dfs(copy_board[:], 2, i-1)
+                    total_score += score
+                    self.dict[str1] = score
+        return total_score/counter * 0.9
+
+
         
 
 
 def main():
     start = time.time()
-    # game = TicTacToe()
-    # game.play_one_game()
+    game = TicTacToe()
+    game.restart_board()
+    game.dfs(game.board, 2, -1)
+    with open('xo stuff/xo_dict1.csv', 'w') as output_file:
+        for key in game.dict:
+            output_file.write("%s,%s\n" % (key, game.dict[key]))
+    output_file.close()
     print(time.time() - start)
 
 
 def load_dict():
-    return {row[0]: row[1] for _, row in pd.read_csv(r"xo stuff/xo_dict.csv").iterrows()}
+    return {row[0]: row[1] for _, row in pd.read_csv(r"xo stuff/xo_dict1.csv").iterrows()}
 
 
 def choose_next_move(board, dict1):
