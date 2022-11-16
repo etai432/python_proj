@@ -89,7 +89,7 @@ class Board(GridLayout):
             self.turns += 1
             if xo.check_win(self.game_board, computer_turn, 2) == 2:
                 self.win("computer")
-            if xo.is_empty(self.game_board):
+            elif xo.is_empty(self.game_board):
                 self.win("tie")
 
 

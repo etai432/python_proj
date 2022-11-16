@@ -249,12 +249,12 @@ class TicTacToe:
         output_file.close()
     
     def dfs(self, board, turn, last_index):
-        self.empty_space(board)
-        if len(self.empty) == 0:
-            return 0.5
         win = abs(self.check_win(board, last_index, turn) - 2)
         if win != 1:
             return win / 2
+        self.empty_space(board)
+        if len(self.empty) == 0:
+            return 0.5
         total_score = 0
         counter = 0
         if turn == 2:
@@ -300,10 +300,14 @@ def main():
 
 
 def load_dict():
-    return {row[0]: row[1] for _, row in pd.read_csv(r"xo stuff/xo_dict1.csv").iterrows()}
+    with open('xo stuff/xo_dict1.csv', mode='r') as infile:
+        reader = csv.reader(infile)
+        dict1 = {rows[0]:rows[1] for rows in reader}
+    return dict1
 
 
 def choose_next_move(board, dict1):
+    print(board)
     empty = []
     for i in range(9):
         if board[i] == 1:
@@ -313,10 +317,10 @@ def choose_next_move(board, dict1):
     for i in empty:
         copy_board = board[:]
         copy_board[i] = 2
-        copy_board = str(np.array(copy_board))
-        if copy_board in dict1:
-            if max1 < dict1[copy_board]:
-                max1 = dict1[copy_board]
+        str1 = str(copy_board).replace(',', '').replace(' ', '')[1:10]
+        if str1 in dict1:
+            if max1 < float(dict1[str1]):
+                max1 = float(dict1[str1])
                 index = i
     if index == -1:
         index = random.choice(empty)
