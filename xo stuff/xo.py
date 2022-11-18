@@ -307,7 +307,6 @@ def load_dict():
 
 
 def choose_next_move(board, dict1):
-    print(board)
     empty = []
     for i in range(9):
         if board[i] == 1:
