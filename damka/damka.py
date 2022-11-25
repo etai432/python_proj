@@ -57,6 +57,16 @@ class Damka:
                 return 0
         return 1
     
+    def closest2(self, board):
+        for i in range(64):
+            if board[i] == 2:
+                return i // 8
+    
+    def closest0(self, board):
+        for i in range(64):
+            if board[63 - i] == 0:
+                return i // 8
+
     def is_tie(self, turn, board):
         self.players(turn, board)
         if turn == 2:
@@ -177,11 +187,12 @@ class Damka:
                         board[goal] = player
             else:
                 if last != i[1] and i[1] == goal:
-                    self.move(place, i[0], i[0], board)
+                    board = self.move(place, i[0], i[0], board)
                     player = board[i[0]]
                     board[i[0]] = 1
                     board[int((i[1] + i[0])/2)] = 1
                     board[i[1]] = player
+        return board
 
     def print_board(self):
         print("the board: ")
@@ -307,7 +318,22 @@ class Damka:
         print("percentage of found boards: ", found / (found + not_found)*100, "%")
         print("found: ", found)
     
-    def dfs(self, board, turn):
+    def eval(self, board):
+        win = self.check_win
+        if win == 0:
+            return -2
+        if win == 2:
+            return 2
+        tup = self.count_troops(board)
+        return (tup[1] - tup[0] + (self.closest2(board) - self.closest0(board))/10) / 10
+    
+    def dfs(self, board, turn, depth):
+        if depth == 0:
+            str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
+            eval1 = self.eval(board)
+            if str1 not in self.dict:
+                self.dict[str1] = eval1
+            return eval1
         win = self.check_win(board)
         if win != 1:
             str1 = str(board).replace('3','').replace(',','').replace(' ','')[1:33]
@@ -325,18 +351,18 @@ class Damka:
                 for move in self.turn:
                     copy_board = board[:]
                     if isinstance(move, tuple):
-                        self.move(player, move[1], -1, copy_board)
+                        copy_board = self.move(player, move[1], -1, copy_board)
                     else:
-                        self.move(player, move, -1, copy_board)
+                        copy_board = self.move(player, move, -1, copy_board)
                     counter += 1
                     if copy_board != board:
                         bool1 = True
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
-                        return self.dict[str1] * 0.92
+                        total_score += self.dict[str1] * 0.92
                     else:
                         tup = self.count_troops(copy_board)
-                        score = self.dfs(copy_board[:], 0)
+                        score = self.dfs(copy_board[:], 0, depth - 1)
                         total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
                         self.dict[str1] = score1
@@ -347,18 +373,18 @@ class Damka:
                 for move in self.turn:
                     copy_board = board[:]
                     if isinstance(move, tuple):
-                        self.move(player, move[1], -1, copy_board)
+                        copy_board = self.move(player, move[1], -1, copy_board)
                     else:
-                        self.move(player, move, -1, copy_board)
+                        copy_board = self.move(player, move, -1, copy_board)
                     counter += 1
                     if copy_board != board:
                         bool1 = True
                     str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
                     if str1 in self.dict:
-                        return self.dict[str1] * 0.92
+                        total_score += self.dict[str1] * 0.92
                     else:
                         tup = self.count_troops(copy_board)
-                        score = self.dfs(copy_board[:], 2)
+                        score = self.dfs(copy_board[:], 2, depth - 1)
                         total_score += score
                         score1 = score + (tup[1] - tup[0]) / 10
                         self.dict[str1] = score1
@@ -368,20 +394,110 @@ class Damka:
                 tup = self.count_troops(board)
                 self.dict[str1] = 0.5 + (tup[1] - tup[0]) / 10
             return 0.5 * 0.92
-        return total_score/counter * 0.92         
+        return total_score/counter * 0.92
+    
+    def choose_next_turn(self, board, turn, depth):
+        self.dict = {}
+        self.dfs(board, turn, depth)
+        index = (-1, -1)
+        max1 = -5
+        min1 = 5
+        if turn == 2:
+            self.players(2, board)
+            for player in self.players2:
+                self.gen_all_moves(player, board)
+                for move in self.turn:
+                    copy_board = board[:]
+                    if isinstance(move, tuple):
+                        copy_board = self.move(player, move[1], -1, copy_board)
+                    else:
+                        copy_board = self.move(player, move, -1, copy_board)
+                    str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        if self.dict[str1] > max1:
+                            max1 = self.dict[str1]
+                            if isinstance(move, tuple):
+                                index = (player, move[1])
+                            else:
+                                index = (player, move)
+        else:
+            self.players(0, board)
+            for player in self.players0:
+                self.gen_all_moves(player, board)
+                for move in self.turn:
+                    copy_board = board[:]
+                    if isinstance(move, tuple):
+                        copy_board = self.move(player, move[1], -1, copy_board)
+                    else:
+                        copy_board = self.move(player, move, -1, copy_board)
+                    str1 = str(copy_board).replace('3','').replace(',','').replace(' ','')[1:33]
+                    if str1 in self.dict:
+                        if self.dict[str1] < min1:
+                            min1 = self.dict[str1]
+                            if isinstance(move, tuple):
+                                index = (player, move[1])
+                            else:
+                                index = (player, move)
+        return index
+    
+    def smart_game(self):
+        self.restart_board()
+        turn = 2
+        tup = (0, 0)
+        counter = 0
+        is_tie = False
+        tup = self.random_turn(2)
+        self.move(tup[0], tup[1], -1, self.board)
+        tup = self.random_turn(0)
+        self.move(tup[0], tup[1], -1, self.board)
+        while self.check_win(self.board) == 1 and counter < 40:
+            self.print_board()
+            if is_tie:
+                return 1
+            if turn == 2:
+                tup = self.choose_next_turn(self.board, 2, 2)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.gen_all_moves(tup[0], self.board)
+                self.board = self.move(tup[0], tup[1], -1, self.board)
+                turn = 0
+            if turn == 0:
+                tup = self.choose_next_turn(self.board, 0, 2)
+                if tup == (-1, -1):
+                    is_tie = True
+                self.gen_all_moves(tup[0], self.board)
+                self.board = self.move(tup[0], tup[1], -1, self.board)
+                turn = 2
+        return self.check_win(self.board)
+                
                     
 
 
 def main():
     start = time.time()
     damka = Damka()
-    damka.restart_board()
-    damka.dfs(damka.board, 2)
-    with open('damka\damka_dict.csv', 'w') as output_file:
-        for key in damka.dict:
-            output_file.write("%s,%s\n"%(key, damka.dict[key][0]))
-    output_file.close()
-    print(time.time() - start)
+    damka.smart_game()
+    # damka.restart_board()
+    # turn = 2
+    # for i in range(14):
+    #     if turn == 2:
+    #         tup = damka.random_turn(2)
+    #         damka.move(tup[0], tup[1], -1, damka.board)
+    #         turn = 0
+    #     if turn == 0:
+    #         tup = damka.random_turn(0)
+    #         if tup == (-1, -1):
+    #             is_tie = True
+    #         damka.move(tup[0], tup[1], -1, damka.board)
+    #         turn = 2
+    # damka.print_board()
+    # print(damka.choose_next_turn(damka.board, 2))
+    # damka.dfs(damka.board, 2, 4)
+    # with open('damka\damka_dict.csv', 'w') as output_file:
+    #     for key in damka.dict:
+    #         output_file.write("%s,%s\n"%(key, damka.dict[key]))
+    # output_file.close()
+    print(time.time() - start) 
     
 
 if __name__ == "__main__":
