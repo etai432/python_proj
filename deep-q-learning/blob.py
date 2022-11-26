@@ -149,6 +149,6 @@ for episode in range(HM_EPiSODES):
     episode_rewards.append(episode_reward)
     epsilon *= EPS_DECAY
 
-with open(f"deep-q-learning\qtable-blob.pickle", "wb") as f:
-    pickle.dump(q_table, f)
+# with open(f"deep-q-learning\qtable-blob.pickle", "wb") as f:
+#     pickle.dump(q_table, f)
 
