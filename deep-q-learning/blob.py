@@ -17,7 +17,7 @@ EPS_DECAY = 0.9998
 
 SHOW_EVERY = 1
 
-start_q_table = None #f"deep-q-learning/qtable-blob.pickle" # or filename
+start_q_table = None # or filename
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
@@ -77,7 +77,6 @@ if start_q_table is None:
             for x2 in range(-SIZE+1, SIZE):
                 for y2 in range(-SIZE+1, SIZE):
                     q_table[((x1, y1), (x2, y2))] = [np.random.uniform(-5, 0) for i in range(4)]
-    print(q_table)
 else:
     with open(start_q_table, "rb") as f:
         q_table = pickle.load(f)
