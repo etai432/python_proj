@@ -80,8 +80,8 @@ bat2 = Bat(16, 2, 150, 36, -1)
 ball = Ball(79, 44, 1, 0, 3, 1)
 if start_q_table is None:
     q_table = {}
-    for dy in range(-SCREEN[1] + bat1.length, SCREEN[1]-1):
-        for dx in range(1, bat2.posx - bat1.posx - 1):
+    for dy in range(-SCREEN[1] + bat1.length, SCREEN[1]):
+        for dx in range(0, bat2.posx - bat1.posx - 1):
             for speed in range(10 ,ball.max_speed*10, 2):
                 for hit in range(bat1.length):
                     angle = math.pi * (hit - bat1.length/2) / bat1.length * 1.8
