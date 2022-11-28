@@ -8,20 +8,22 @@ import math
 
 SCREEN = (160, 90)
 FPS = 30
-HM_EPiSODES = 100000
-SHOW_EVERY = 1000000
+HM_EPISODES = 100000
+SHOW_EVERY = 100001
 
 epsilon = 0.9
-EPS_DECAY = 0.9998
+START_EPSILON_DECAYING = 1
+END_EPSILON_DECAYING = HM_EPISODES // 2
+epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
 
-start_q_table = None
+
+start_q_table = None #f"pong/q-table"
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
 
-TOUCH_SCORE = 1
 WIN_POINT_SCORE = 25
-LOSE_POINT_SCORE = -300
+LOSE_POINT_SCORE = -25
 
 class Bat:
     def __init__(self, length, width, posx, posy, direction):
@@ -100,7 +102,7 @@ else:
         q_table = pickle.load(f)
 env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
 episode_rewards = []
-for episode in range(HM_EPiSODES):
+for episode in range(HM_EPISODES):
     bat1 = Bat(12, 1, 9, 38, 1)
     bat2 = Bat(12, 1, 150, 38, -1)
     ball = Ball(79, 44, 1, 0, 3, 1)
@@ -144,15 +146,13 @@ for episode in range(HM_EPiSODES):
                 ball.calc_angle(ball.posy - bat1.posy, bat1.length)
                 ball.direction = 1
                 ball.change_speed()
-                episode_reward += 1
         if ball.posx + 1 == bat2.posx:
             if ball.posy >= bat2.posy and ball.posy <= (bat2.posy + bat2.length):
                 ball.calc_angle(ball.posy - bat2.posy, bat2.length)
                 ball.direction = -1
                 ball.change_speed()
-                episode_reward += 1
         
-        new_obs1 = (abs(bat1.posx - ball.posx), bat1.posy - ball.posy, ball.speed, ball.angle)
+        new_obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
         if new_obs1 in q_table:
             max_future_q = np.max(q_table[new_obs1])
             current_q = q_table[obs1][action1]
@@ -184,7 +184,8 @@ for episode in range(HM_EPiSODES):
     else:
         episode_reward += LOSE_POINT_SCORE
     episode_rewards.append(episode_reward) 
-    epsilon *= EPS_DECAY
+    if END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING:
+        epsilon -= epsilon_decay_value
 
 with open(f"pong/q-table", "wb") as f:
     pickle.dump(q_table, f)
