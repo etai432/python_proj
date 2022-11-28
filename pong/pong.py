@@ -152,10 +152,15 @@ for episode in range(HM_EPISODES):
                 ball.direction = -1
                 ball.change_speed()
         
-        new_obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
+        if ball.posx > SCREEN[0] / 2:
+            new_obs1 = (ball.posx - bat2.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
+            action = action2
+        else:
+            new_obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
+            action = action1
         if new_obs1 in q_table:
             max_future_q = np.max(q_table[new_obs1])
-            current_q = q_table[obs1][action1]
+            current_q = q_table[obs1][action]
 
             win = check_win()
             if win == 1:
@@ -186,6 +191,7 @@ for episode in range(HM_EPISODES):
     episode_rewards.append(episode_reward) 
     if END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING:
         epsilon -= epsilon_decay_value
+    print(episode)
 
 with open(f"pong/q-table", "wb") as f:
     pickle.dump(q_table, f)
