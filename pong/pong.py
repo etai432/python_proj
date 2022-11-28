@@ -8,16 +8,15 @@ import math
 
 SCREEN = (160, 90)
 FPS = 30
-HM_EPISODES = 100000
-SHOW_EVERY = 100001
+HM_EPISODES = 10
+SHOW_EVERY = 1
 
-epsilon = 0.9
-START_EPSILON_DECAYING = 1
-END_EPSILON_DECAYING = HM_EPISODES // 2
-epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
+epsilon = 0
+DECAY = 0.99998
 
-
-start_q_table = None #f"pong/q-table"
+#TODO: add another q_table
+start_q_table = f"pong/q-table" 
+# start_q_table = None 
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
@@ -61,6 +60,7 @@ class Ball:
         self.direction = direction
     
     def move(self):
+        #TODO: partial movement
         self.posx += int(self.speed) * self.direction
         self.posy += int(math.sin(self.angle) * self.speed)
         if self.posy > SCREEN[1] - 2 or self.posy < 1:
@@ -105,7 +105,8 @@ episode_rewards = []
 for episode in range(HM_EPISODES):
     bat1 = Bat(12, 1, 9, 38, 1)
     bat2 = Bat(12, 1, 150, 38, -1)
-    ball = Ball(79, 44, 1, 0, 3, 1)
+    num1 = np.random.randint(0, 2)
+    ball = Ball(79, 44, 1, 0, 3, num1 * 2 - 1)
     show = False
     if episode % SHOW_EVERY == 0:
         if episode > 0:
@@ -119,7 +120,7 @@ for episode in range(HM_EPISODES):
     while check_win() == 1:
         frame_time = time.time()
         if ball.posx > bat1.posx and ball.posx <= bat2.posx:
-            obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
+            obs1 = (ball.posx - bat1.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
             if obs1 in q_table:
                 if np.random.random() > epsilon:
                     action1 = np.argmax(q_table[obs1])
@@ -129,10 +130,10 @@ for episode in range(HM_EPISODES):
                 q_table[obs1] = [np.random.uniform(-5, 0) for i in range(3)]
                 action1 = np.random.randint(0, 3)
             bat1.action(action1)
-            obs2 = (ball.posx - bat2.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
+            obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
             if obs2 in q_table:
                 if np.random.random() > epsilon:
-                    action2 = np.argmax(q_table[obs1])
+                    action2 = np.argmin(q_table[obs2])
                 else:
                     action2 = np.random.randint(0, 3)
             else:
@@ -153,10 +154,10 @@ for episode in range(HM_EPISODES):
                 ball.change_speed()
         
         if ball.posx > SCREEN[0] / 2:
-            new_obs1 = (ball.posx - bat2.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
+            new_obs1 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
             action = action2
         else:
-            new_obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
+            new_obs1 = (ball.posx - bat1.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
             action = action1
         if new_obs1 in q_table:
             max_future_q = np.max(q_table[new_obs1])
@@ -189,8 +190,7 @@ for episode in range(HM_EPISODES):
     else:
         episode_reward += LOSE_POINT_SCORE
     episode_rewards.append(episode_reward) 
-    if END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING:
-        epsilon -= epsilon_decay_value
+    epsilon *= DECAY
     print(episode)
 
 with open(f"pong/q-table", "wb") as f:
