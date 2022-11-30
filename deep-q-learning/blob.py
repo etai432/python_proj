@@ -224,3 +224,4 @@ with open(f"pong/q-table", "wb") as f:
 with open(f"pong/q-table1", "wb") as f:
     pickle.dump(q_table1, f)
 print(time.time()- start)
+#test
