@@ -16,7 +16,7 @@ epsilon = 0.99
 DECAY = 0.99998
 
 start_q_table = f"pong/q-table" 
-# start_q_table = None
+start_q_table = None
 start_q_table1 = f"pong/q-table" 
 
 LEARNING_RATE = 0.1
@@ -60,13 +60,24 @@ class Ball:
         self.max_speed = max
         self.direction = direction
         self.hit = 0
+        self.extra_y = 0
     
     def move(self):
-        #TODO: partial movement
         self.posx += int(self.speed) * self.direction
-        self.posy += int(math.sin(self.angle) * self.speed)
-        if self.posy > SCREEN[1] - 2 or self.posy < 1:
+        self.extra_y += math.sin(self.angle) * self.speed
+        if self.angle > 0:
+            while self.extra_y > 1:
+                self.extra_y -= 1
+                self.posy += 1
+        if self.angle < 0:
+            while self.extra_y < -1:
+                self.extra_y += 1
+                self.posy -= 1
+        if self.posy > SCREEN[1] - abs(self.extra_y) - 1 or self.posy < abs(self.extra_y):
             self.angle *= -1
+            self.extra_y *= -1
+        if self.posy == 90:
+            self.posy -= 1
         if self.posx > SCREEN[0] - 1:
             self.posx = SCREEN[0] - 1
         elif self.posx < 0:
@@ -76,6 +87,8 @@ class Ball:
     def calc_angle(self, hit, length):
         self.hit = hit
         self.angle = math.pi * (hit - length/2) / length * 1.8
+        print(hit - length/2)
+        print(self.angle)
 
     def change_speed(self):
         if self.speed < self.max_speed:
@@ -112,7 +125,6 @@ else:
         q_table = pickle.load(f)
     with open(start_q_table1, "rb") as f:
         q_table1 = pickle.load(f)
-print((q_table1))
 env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
 episode_rewards = []
 for episode in range(HM_EPISODES):
@@ -139,7 +151,6 @@ for episode in range(HM_EPISODES):
             obs_list1.append(copy.deepcopy(obs1))
             str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
             if str1 in q_table:
-                print(q_table[str1])
                 if np.random.random() > epsilon:
                     pass
                     #TODO: make him choose the best option
@@ -153,7 +164,6 @@ for episode in range(HM_EPISODES):
             obs_list2.append(copy.deepcopy(obs2))
             str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
             if str1 in q_table1:
-                print(q_table1[str1])
                 if np.random.random() > epsilon:
                     pass
                     #TODO: make him choose the best option
@@ -169,10 +179,12 @@ for episode in range(HM_EPISODES):
             if ball.posy >= bat1.posy and ball.posy <= (bat1.posy + bat1.length):
                 ball.calc_angle(ball.posy - bat1.posy, bat1.length)
                 ball.direction = 1
+                ball.extra_y = 0
         if ball.posx + 1 == bat2.posx:
             if ball.posy >= bat2.posy and ball.posy <= (bat2.posy + bat2.length):
                 ball.calc_angle(ball.posy - bat2.posy, bat2.length)
                 ball.direction = -1
+                ball.extra_y = 0
         
 
         if show:
