@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import pickle
 import time
 import math
+import copy
 
 SCREEN = (160, 90)
 FPS = 30
@@ -14,9 +15,9 @@ SHOW_EVERY = 1
 epsilon = 0
 DECAY = 0.99998
 
-#TODO: add another q_table
 start_q_table = f"pong/q-table" 
-# start_q_table = None 
+# start_q_table = None
+start_q_table1 = f"pong/q-table" 
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
@@ -58,6 +59,7 @@ class Ball:
         self.angle = angle
         self.max_speed = max
         self.direction = direction
+        self.hit = 0
     
     def move(self):
         #TODO: partial movement
@@ -72,6 +74,7 @@ class Ball:
 
 
     def calc_angle(self, hit, length):
+        self.hit = hit
         self.angle = math.pi * (hit - length/2) / length * 1.8
 
     def change_speed(self):
@@ -85,21 +88,31 @@ def check_win():
         return 2
     return 1
 
+def rate_obs(obs_list, score):
+    list1 = []
+    for i in range(len(obs_list)):
+        list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.9 ** (len(obs_list) - i - 1))))
+    return list1
+
 start = time.time()
 bat1 = Bat(16, 1, 9, 36, 1)
 bat2 = Bat(16, 1, 150, 36, -1)
 ball = Ball(79, 44, 1, 0, 3, 1)
 if start_q_table is None:
     q_table = {}
-    for dy in range(-SCREEN[1] + bat1.length, SCREEN[1]):
-        for dx in range(0, bat2.posx - bat1.posx - 1):
-            for speed in range(10 ,ball.max_speed*10, 2):
-                for hit in range(bat1.length):
-                    angle = math.pi * (hit - bat1.length/2) / bat1.length * 1.8
-                    q_table[(dx, dy, speed/10, angle)] = [np.random.uniform(-5, 0) for i in range(3)]
+    q_table1 = {}
+    # for dy in range(-SCREEN[1] + bat1.length, SCREEN[1]):
+    #     for dx in range(0, bat2.posx - bat1.posx - 1):
+    #         for hit in range(bat1.length):
+    #             angle = math.pi * (hit - bat1.length/2) / bat1.length * 1.8
+    #             q_table[(dx, dy, angle)] = [np.random.uniform(-5, 0) for i in range(3)]
+    # q_table1 = copy.deepcopy(q_table)
 else:
     with open(start_q_table, "rb") as f:
         q_table = pickle.load(f)
+    with open(start_q_table1, "rb") as f:
+        q_table1 = pickle.load(f)
+print((q_table1))
 env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
 episode_rewards = []
 for episode in range(HM_EPISODES):
@@ -116,28 +129,37 @@ for episode in range(HM_EPISODES):
     else:
         show = False
     
+    obs_list1 = []
+    obs_list2 = []
     episode_reward = 0
     while check_win() == 1:
         frame_time = time.time()
         if ball.posx > bat1.posx and ball.posx <= bat2.posx:
-            obs1 = (ball.posx - bat1.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
-            if obs1 in q_table:
+            obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.hit)
+            obs_list1.append(copy.deepcopy(obs1))
+            str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
+            if str1 in q_table:
+                print(q_table1[str1])
                 if np.random.random() > epsilon:
-                    action1 = np.argmax(q_table[obs1])
+                    pass
+                    #TODO: make him choose the best option
                 else:
                     action1 = np.random.randint(0, 3)
             else:
-                q_table[obs1] = [np.random.uniform(-5, 0) for i in range(3)]
+                # q_table[obs1] = [np.random.uniform(-5, 0) for i in range(3)]
                 action1 = np.random.randint(0, 3)
-            bat1.action(action1)
-            obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
-            if obs2 in q_table:
+            obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.hit)
+            obs_list2.append(copy.deepcopy(obs2))
+            str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
+            if str1 in q_table1:
+                print(q_table1[str1])
                 if np.random.random() > epsilon:
-                    action2 = np.argmin(q_table[obs2])
+                    pass
+                    #TODO: make him choose the best option
                 else:
                     action2 = np.random.randint(0, 3)
             else:
-                q_table[obs2] = [np.random.uniform(-5, 0) for i in range(3)]
+                # q_table1[obs2] = [np.random.uniform(-5, 0) for i in range(3)]
                 action2 = np.random.randint(0, 3)
             bat2.action(action2)
         ball.move()
@@ -146,34 +168,11 @@ for episode in range(HM_EPISODES):
             if ball.posy >= bat1.posy and ball.posy <= (bat1.posy + bat1.length):
                 ball.calc_angle(ball.posy - bat1.posy, bat1.length)
                 ball.direction = 1
-                ball.change_speed()
         if ball.posx + 1 == bat2.posx:
             if ball.posy >= bat2.posy and ball.posy <= (bat2.posy + bat2.length):
                 ball.calc_angle(ball.posy - bat2.posy, bat2.length)
                 ball.direction = -1
-                ball.change_speed()
         
-        if ball.posx > SCREEN[0] / 2:
-            new_obs1 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.speed, ball.angle)
-            action = action2
-        else:
-            new_obs1 = (ball.posx - bat1.posx, bat1.posy - ball.posy, ball.speed, ball.angle)
-            action = action1
-        if new_obs1 in q_table:
-            max_future_q = np.max(q_table[new_obs1])
-            current_q = q_table[obs1][action]
-
-            win = check_win()
-            if win == 1:
-                new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (episode_reward + DISCOUNT * max_future_q)
-            elif win == 2:
-                new_q = WIN_POINT_SCORE
-            else:
-                new_q = LOSE_POINT_SCORE
-            
-            q_table[obs1][action1] = new_q
-        else:
-            q_table[new_obs1] = [np.random.uniform(-5, 0) for i in range(3)]
 
         if show:
             env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
@@ -187,12 +186,28 @@ for episode in range(HM_EPISODES):
             cv2.waitKey(int((1/FPS - time.time() + frame_time)*1000))
     if check_win() == 2:
         episode_reward += WIN_POINT_SCORE
+        obs_list1 = rate_obs(obs_list1, WIN_POINT_SCORE)
+        obs_list2 = rate_obs(obs_list2, LOSE_POINT_SCORE)
     else:
         episode_reward += LOSE_POINT_SCORE
+        obs_list2 = rate_obs(obs_list2, WIN_POINT_SCORE)
+        obs_list1 = rate_obs(obs_list1, LOSE_POINT_SCORE)
+    for i in obs_list1:
+        if i[0] in q_table:
+            q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
+        else:
+            q_table[i[0]] = (i[1], 1)
+    for i in obs_list2:
+        if i[0] in q_table1:
+            q_table1[i[0]] = ((q_table1[i[0]][0] * q_table1[i[0]][1] + i[1]) / (q_table1[i[0]][1] + 1), q_table1[i[0]][1] + 1)
+        else:
+            q_table1[i[0]] = (i[1], 1)
     episode_rewards.append(episode_reward) 
     epsilon *= DECAY
     print(episode)
 
 with open(f"pong/q-table", "wb") as f:
     pickle.dump(q_table, f)
+with open(f"pong/q-table1", "wb") as f:
+    pickle.dump(q_table1, f)
 print(time.time()- start)
