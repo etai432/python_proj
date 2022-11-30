@@ -12,7 +12,7 @@ FPS = 30
 HM_EPISODES = 10
 SHOW_EVERY = 1
 
-epsilon = 0
+epsilon = 0.99
 DECAY = 0.99998
 
 start_q_table = f"pong/q-table" 
@@ -139,7 +139,7 @@ for episode in range(HM_EPISODES):
             obs_list1.append(copy.deepcopy(obs1))
             str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
             if str1 in q_table:
-                print(q_table1[str1])
+                print(q_table[str1])
                 if np.random.random() > epsilon:
                     pass
                     #TODO: make him choose the best option
@@ -148,6 +148,7 @@ for episode in range(HM_EPISODES):
             else:
                 # q_table[obs1] = [np.random.uniform(-5, 0) for i in range(3)]
                 action1 = np.random.randint(0, 3)
+            bat1.action(action1)
             obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.hit)
             obs_list2.append(copy.deepcopy(obs2))
             str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
