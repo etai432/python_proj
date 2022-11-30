@@ -12,12 +12,12 @@ FPS = 30
 HM_EPISODES = 10
 SHOW_EVERY = 1
 
-epsilon = 0.99
-DECAY = 0.99998
+epsilon = 0
+DECAY = 0.999998
 
 start_q_table = f"pong/q-table" 
-start_q_table = None
-start_q_table1 = f"pong/q-table" 
+# start_q_table = None
+start_q_table1 = f"pong/q-table1" 
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
@@ -32,6 +32,9 @@ class Bat:
         self.posx = posx
         self.posy = posy
         self.dir = direction
+    
+    def clone(self):
+        return Bat(self.length, self.width, self.posx, self.posy, self.dir)
     
     def __sub__(self, other):
         return ((self.posx - other.posx) * self.dir, self.posy - other.posy)
@@ -62,6 +65,9 @@ class Ball:
         self.hit = 0
         self.extra_y = 0
     
+    def clone(self):
+        return Ball(self.posx, self.posy, self.speed, self.angle, self.max_speed, self.direction)
+    
     def move(self):
         self.posx += int(self.speed) * self.direction
         self.extra_y += math.sin(self.angle) * self.speed
@@ -87,8 +93,6 @@ class Ball:
     def calc_angle(self, hit, length):
         self.hit = hit
         self.angle = math.pi * (hit - length/2) / length * 1.8
-        print(hit - length/2)
-        print(self.angle)
 
     def change_speed(self):
         if self.speed < self.max_speed:
@@ -107,6 +111,24 @@ def rate_obs(obs_list, score):
         list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.9 ** (len(obs_list) - i - 1))))
     return list1
 
+def choose_next_turn(bat, ball1, q_table):
+    best_action = -1
+    max1 = -30
+    copy_ball = ball1.clone()
+    copy_ball.move()
+    for used_action in range(3):
+        copy_bat = bat.clone()
+        copy_bat.action(used_action)
+        obs = (copy_bat.posx - copy_ball.posx, copy_bat.posy - copy_ball.posy, copy_ball.hit)
+        str2 = str(obs).replace(" ","").replace(",","")[1:].replace(")","")
+        if str2 in q_table:
+            if q_table[str2][0] > max1:
+                best_action = used_action
+                max1 = q_table[str2][0]
+    if best_action == -1:
+        best_action = np.random.randint(0, 3)
+    return best_action
+    
 start = time.time()
 bat1 = Bat(16, 1, 9, 36, 1)
 bat2 = Bat(16, 1, 150, 36, -1)
@@ -131,7 +153,7 @@ for episode in range(HM_EPISODES):
     bat1 = Bat(12, 1, 9, 38, 1)
     bat2 = Bat(12, 1, 150, 38, -1)
     num1 = np.random.randint(0, 2)
-    ball = Ball(79, 44, 1, 0, 3, num1 * 2 - 1)
+    ball = Ball(79, 44, 30/FPS, 0, 3, num1 * 2 - 1)
     show = False
     if episode % SHOW_EVERY == 0:
         if episode > 0:
@@ -152,8 +174,7 @@ for episode in range(HM_EPISODES):
             str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
             if str1 in q_table:
                 if np.random.random() > epsilon:
-                    pass
-                    #TODO: make him choose the best option
+                    action1 = choose_next_turn(bat1, ball, q_table)
                 else:
                     action1 = np.random.randint(0, 3)
             else:
@@ -166,7 +187,7 @@ for episode in range(HM_EPISODES):
             if str1 in q_table1:
                 if np.random.random() > epsilon:
                     pass
-                    #TODO: make him choose the best option
+                    action2 = choose_next_turn(bat2, ball, q_table1)
                 else:
                     action2 = np.random.randint(0, 3)
             else:
