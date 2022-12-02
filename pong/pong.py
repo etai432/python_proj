@@ -9,23 +9,39 @@ import copy
 
 SCREEN = (160, 90)
 FPS = 30
-HM_EPISODES = 1000000
-SHOW_EVERY = 10000000
+show = False
+if show:
+    HM_EPISODES = 10
+    SHOW_EVERY = 1
 
-epsilon = 0.99
-DECAY = 0.99998
+    epsilon = 0
+    START_EPSILON_DECAYING = 1
+    END_EPSILON_DECAYING = HM_EPISODES * 2 // 3
+    epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
 
-start_q_table = f"pong/q-table" 
-start_q_table = None
-start_q_table1 = f"pong/q-table1" 
+    start_q_table = f"pong/q-table" 
+    # start_q_table = None
+    start_q_table1 = f"pong/q-table1" 
+else:
+    HM_EPISODES = 1000000
+    SHOW_EVERY = 10000000
 
-TEACH_MAIN = True
+    epsilon = 1
+    START_EPSILON_DECAYING = 1
+    END_EPSILON_DECAYING = HM_EPISODES * 2 // 3
+    epsilon_decay_value = epsilon/(END_EPSILON_DECAYING - START_EPSILON_DECAYING)
+
+    start_q_table = f"pong/q-table" 
+    start_q_table = None
+    start_q_table1 = f"pong/q-table1" 
+
+TEACH_MAIN = False
 
 LEARNING_RATE = 0.1
 DISCOUNT = 0.95
 
-WIN_POINT_SCORE = 25
-LOSE_POINT_SCORE = -25
+WIN_POINT_SCORE = 2
+LOSE_POINT_SCORE = -2
 
 class Bat:
     def __init__(self, length, width, posx, posy, direction):
@@ -110,7 +126,7 @@ def check_win(ball):
 def rate_obs(obs_list, score):
     list1 = []
     for i in range(len(obs_list)):
-        list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.9 ** (len(obs_list) - i - 1))))
+        list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.99 ** (len(obs_list) - i - 1))))
     return list1
 
 def better_ai(bat, ball):
@@ -161,7 +177,6 @@ else:
 
 def play_2ai(epsilon):
     env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
-    episode_rewards = []
     for episode in range(HM_EPISODES):
         bat1 = Bat(12, 1, 9, 38, 1)
         bat2 = Bat(12, 1, 150, 38, -1)
@@ -173,19 +188,17 @@ def play_2ai(epsilon):
         if episode % SHOW_EVERY == 0:
             if episode > 0 or SHOW_EVERY == 1:
                 print(f"on # {episode}, epsilon: {epsilon}")
-                print(f"{SHOW_EVERY} ep mean {np.mean(episode_rewards[-SHOW_EVERY:])}")
                 show = True
         else:
             show = False      
         obs_list1 = []
         obs_list2 = []
-        episode_reward = 0
         while check_win(ball) == 1:
-            print()
             frame_time = time.time()
             if ball.posx > bat1.posx and ball.posx <= bat2.posx:
                 obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.hit)
-                obs_list1.append(copy.deepcopy(obs1))
+                if ball.posx < SCREEN[0]/2:
+                    obs_list1.append(copy.deepcopy(obs1))
                 str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
                 if str1 in q_table:
                     if np.random.random() > epsilon:
@@ -193,21 +206,19 @@ def play_2ai(epsilon):
                     else:
                         action1 = np.random.randint(0, 3)
                 else:
-                    # q_table[obs1] = [np.random.uniform(-5, 0) for i in range(3)]
                     action1 = np.random.randint(0, 3)
                 bat1.action(action1)
                 if not TEACH_MAIN:
                     obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.hit)
-                    obs_list2.append(copy.deepcopy(obs2))
+                    if ball.posx > SCREEN[0]:
+                        obs_list2.append(copy.deepcopy(obs2))
                     str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
                     if str1 in q_table1:
                         if np.random.random() > epsilon:
-                            pass
                             action2 = choose_next_turn(bat2, ball, q_table1)
                         else:
                             action2 = np.random.randint(0, 3)
                     else:
-                        # q_table1[obs2] = [np.random.uniform(-5, 0) for i in range(3)]
                         action2 = np.random.randint(0, 3)
                     bat2.action(action2)
                 else:
@@ -220,12 +231,24 @@ def play_2ai(epsilon):
                     ball.calc_angle(ball.posy - bat1.posy, bat1.length)
                     ball.direction = 1
                     ball.extra_y = 0
+                    obs_list1 = rate_obs(obs_list1, 1)
+                    for i in obs_list1:
+                        if i[0] in q_table:
+                            q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
+                        else:
+                            q_table[i[0]] = (i[1], 1)
             if ball.posx + 1 == bat2.posx:
                 if ball.posy >= bat2.posy and ball.posy <= (bat2.posy + bat2.length):
                     touch1 += 1
                     ball.calc_angle(ball.posy - bat2.posy, bat2.length)
                     ball.direction = -1
                     ball.extra_y = 0
+                    obs_list2 = rate_obs(obs_list2, 1)
+                    for i in obs_list2:
+                        if i[0] in q_table1:
+                            q_table1[i[0]] = ((q_table1[i[0]][0] * q_table1[i[0]][1] + i[1]) / (q_table1[i[0]][1] + 1), q_table1[i[0]][1] + 1)
+                        else:
+                            q_table1[i[0]] = (i[1], 1)
             
 
             if show:
@@ -238,26 +261,21 @@ def play_2ai(epsilon):
                 cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
                 cv2.imshow("Window_name", np.array(img))
                 cv2.waitKey(int((1/FPS - time.time() + frame_time)*1000))
-        if check_win(ball) == 2:
-            episode_reward += WIN_POINT_SCORE
-            obs_list1 = rate_obs(obs_list1, WIN_POINT_SCORE + touch)
-            obs_list2 = rate_obs(obs_list2, LOSE_POINT_SCORE + touch)
-        else:
-            episode_reward += LOSE_POINT_SCORE
-            obs_list2 = rate_obs(obs_list2, WIN_POINT_SCORE + touch1)
-            obs_list1 = rate_obs(obs_list1, LOSE_POINT_SCORE + touch1)
-        for i in obs_list1:
-            if i[0] in q_table:
-                q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
-            else:
-                q_table[i[0]] = (i[1], 1)
-        for i in obs_list2:
-            if i[0] in q_table1:
-                q_table1[i[0]] = ((q_table1[i[0]][0] * q_table1[i[0]][1] + i[1]) / (q_table1[i[0]][1] + 1), q_table1[i[0]][1] + 1)
-            else:
-                q_table1[i[0]] = (i[1], 1)
-        episode_rewards.append(episode_reward) 
-        epsilon *= DECAY
+        if check_win(ball) != 1:
+            obs_list1 = rate_obs(obs_list1, -2)
+            obs_list2 = rate_obs(obs_list2 , -2)
+            for i in obs_list1:
+                if i[0] in q_table:
+                    q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
+                else:
+                    q_table[i[0]] = (i[1], 1)
+            for i in obs_list2:
+                if i[0] in q_table1:
+                    q_table1[i[0]] = ((q_table1[i[0]][0] * q_table1[i[0]][1] + i[1]) / (q_table1[i[0]][1] + 1), q_table1[i[0]][1] + 1)
+                else:
+                    q_table1[i[0]] = (i[1], 1)
+        if END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING:
+            epsilon -= epsilon_decay_value
         print(episode)
 
     with open(f"pong/q-table", "wb") as f:
@@ -266,6 +284,7 @@ def play_2ai(epsilon):
         with open(f"pong/q-table1", "wb") as f:
             pickle.dump(q_table1, f)
     print(time.time()- start)
+    print(epsilon)
 
 def main():
     play_2ai(epsilon)
