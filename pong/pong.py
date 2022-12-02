@@ -23,7 +23,7 @@ if show:
     # start_q_table = None
     start_q_table1 = f"pong/q-table1" 
 else:
-    HM_EPISODES = 1000000
+    HM_EPISODES = 100000
     SHOW_EVERY = 10000000
 
     epsilon = 1
@@ -126,7 +126,7 @@ def check_win(ball):
 def rate_obs(obs_list, score):
     list1 = []
     for i in range(len(obs_list)):
-        list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.99 ** (len(obs_list) - i - 1))))
+        list1.append((str(obs_list[i]).replace(" ","").replace(",","")[1:].replace(")",""), score * (0.9 ** (len(obs_list) - i - 1))))
     return list1
 
 def better_ai(bat, ball):
@@ -177,14 +177,18 @@ else:
 
 def play_2ai(epsilon):
     env = np.zeros((SCREEN[1], SCREEN[0], 3), dtype=np.uint8)
+    touch = 0
+    max_touch = -1
     for episode in range(HM_EPISODES):
         bat1 = Bat(12, 1, 9, 38, 1)
         bat2 = Bat(12, 1, 150, 38, -1)
         num1 = np.random.randint(0, 2)
         ball = Ball(79, 44, 1, 0, 3, num1 * 2 - 1)
-        touch = 0
-        touch1 = 0
         show = False
+        if touch > max_touch:
+            print("max touch:", touch)
+            max_touch = touch
+        touch = 0
         if episode % SHOW_EVERY == 0:
             if episode > 0 or SHOW_EVERY == 1:
                 print(f"on # {episode}, epsilon: {epsilon}")
@@ -197,8 +201,7 @@ def play_2ai(epsilon):
             frame_time = time.time()
             if ball.posx > bat1.posx and ball.posx <= bat2.posx:
                 obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.hit)
-                if ball.posx < SCREEN[0]/2:
-                    obs_list1.append(copy.deepcopy(obs1))
+                obs_list1.append(copy.deepcopy(obs1))
                 str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
                 if str1 in q_table:
                     if np.random.random() > epsilon:
@@ -210,8 +213,7 @@ def play_2ai(epsilon):
                 bat1.action(action1)
                 if not TEACH_MAIN:
                     obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.hit)
-                    if ball.posx > SCREEN[0]:
-                        obs_list2.append(copy.deepcopy(obs2))
+                    obs_list2.append(copy.deepcopy(obs2))
                     str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
                     if str1 in q_table1:
                         if np.random.random() > epsilon:
@@ -239,7 +241,7 @@ def play_2ai(epsilon):
                             q_table[i[0]] = (i[1], 1)
             if ball.posx + 1 == bat2.posx:
                 if ball.posy >= bat2.posy and ball.posy <= (bat2.posy + bat2.length):
-                    touch1 += 1
+                    touch += 1
                     ball.calc_angle(ball.posy - bat2.posy, bat2.length)
                     ball.direction = -1
                     ball.extra_y = 0
@@ -262,8 +264,8 @@ def play_2ai(epsilon):
                 cv2.imshow("Window_name", np.array(img))
                 cv2.waitKey(int((1/FPS - time.time() + frame_time)*1000))
         if check_win(ball) != 1:
-            obs_list1 = rate_obs(obs_list1, -2)
-            obs_list2 = rate_obs(obs_list2 , -2)
+            obs_list1 = rate_obs(obs_list1, -10)
+            obs_list2 = rate_obs(obs_list2 , -10)
             for i in obs_list1:
                 if i[0] in q_table:
                     q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
@@ -280,9 +282,8 @@ def play_2ai(epsilon):
 
     with open(f"pong/q-table", "wb") as f:
         pickle.dump(q_table, f)
-    if not TEACH_MAIN:
-        with open(f"pong/q-table1", "wb") as f:
-            pickle.dump(q_table1, f)
+    with open(f"pong/q-table1", "wb") as f:
+        pickle.dump(q_table1, f)
     print(time.time()- start)
     print(epsilon)
 
