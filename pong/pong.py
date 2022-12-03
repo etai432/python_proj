@@ -36,7 +36,7 @@ else:
     SECOND_DECAY_RATE = new_value/(HM_EPISODES - END_EPSILON_DECAYING)
 
     start_q_table = f"pong/q-table.pickle" 
-    # start_q_table = None
+    start_q_table = None
     start_q_table1 = f"pong/q-table1.pickle" 
 
 TEACH_MAIN = False
@@ -204,6 +204,8 @@ def play_2ai(epsilon):
         obs_list1 = []
         obs_list2 = []
         while check_win(ball) == 1:
+            if touch > 25:
+                break
             frame_time = time.time()
             if ball.posx > bat1.posx and ball.posx <= bat2.posx:
                 obs1 = (bat1.posy - ball.posy)
@@ -282,6 +284,8 @@ def play_2ai(epsilon):
                     q_table1[i[0]] = ((q_table1[i[0]][0] * q_table1[i[0]][1] + i[1]) / (q_table1[i[0]][1] + 1), q_table1[i[0]][1] + 1)
                 else:
                     q_table1[i[0]] = (i[1], 1)
+            obs_list1 = []
+            obs_list2 = []
         if END_EPSILON_DECAYING >= episode >= START_EPSILON_DECAYING:
             epsilon -= epsilon_decay_value
         else:
@@ -292,6 +296,11 @@ def play_2ai(epsilon):
             touch_avg /= per
             print("touch avg:", touch_avg)
             touch_avg = 0
+            if int(episode//per) % 10 == 0:
+                with open(f"pong/q-table.pickle", "wb") as f:
+                    pickle.dump(q_table, f)
+                with open(f"pong/q-table1.pickle", "wb") as f:
+                    pickle.dump(q_table1, f)
 
     with open(f"pong/q-table.pickle", "wb") as f:
         pickle.dump(q_table, f)
@@ -301,13 +310,7 @@ def play_2ai(epsilon):
     print(epsilon)
 
 def main():
-    start_q_table = None
-    epsilon = 1
     play_2ai(epsilon)
-    HM_EPISODES = 100000
-    for i in range(20):
-        epsilon = 1
-        play_2ai(epsilon)
 
 if __name__ == "__main__":
     main()
