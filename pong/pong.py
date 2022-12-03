@@ -25,7 +25,7 @@ if show:
     # start_q_table = None
     start_q_table1 = f"pong/q-table1.pickle" 
 else:
-    HM_EPISODES = 100000
+    HM_EPISODES = 1000000
     SHOW_EVERY = 10000000
 
     epsilon = 1
@@ -150,7 +150,7 @@ def choose_next_turn(bat, ball1, q_table):
     for used_action in range(3):
         copy_bat = bat.clone()
         copy_bat.action(used_action)
-        obs = (copy_bat.posx - copy_ball.posx, copy_bat.posy - copy_ball.posy, copy_ball.hit)
+        obs = (copy_bat.posy - copy_ball.posy)
         str2 = str(obs).replace(" ","").replace(",","")[1:].replace(")","")
         if str2 in q_table:
             if q_table[str2][0] > max1:
@@ -206,7 +206,7 @@ def play_2ai(epsilon):
         while check_win(ball) == 1:
             frame_time = time.time()
             if ball.posx > bat1.posx and ball.posx <= bat2.posx:
-                obs1 = (bat1.posx - ball.posx, bat1.posy - ball.posy, ball.hit)
+                obs1 = (bat1.posy - ball.posy)
                 obs_list1.append(copy.deepcopy(obs1))
                 str1 = str(obs1).replace(" ","").replace(",","")[1:].replace(")","")
                 if str1 in q_table:
@@ -218,7 +218,7 @@ def play_2ai(epsilon):
                     action1 = np.random.randint(0, 3)
                 bat1.action(action1)
                 if not TEACH_MAIN:
-                    obs2 = (bat2.posx - ball.posx, bat2.posy - ball.posy, ball.hit)
+                    obs2 = (bat2.posy - ball.posy)
                     obs_list2.append(copy.deepcopy(obs2))
                     str1 = str(obs2).replace(" ","").replace(",","")[1:].replace(")","")
                     if str1 in q_table1:
@@ -270,8 +270,8 @@ def play_2ai(epsilon):
                 cv2.imshow("Window_name", np.array(img))
                 cv2.waitKey(int((1/FPS - time.time() + frame_time)*1000))
         if ball.posx == bat1.posx or ball.posx == bat2.posx:
-            obs_list1 = rate_obs(obs_list1, -10 - abs(bat1.posy - ball.posy))
-            obs_list2 = rate_obs(obs_list2 , -10 - abs(bat2.posy - ball.posy))
+            obs_list1 = rate_obs(obs_list1, -100)
+            obs_list2 = rate_obs(obs_list2 , -100)
             for i in obs_list1:
                 if i[0] in q_table:
                     q_table[i[0]] = ((q_table[i[0]][0] * q_table[i[0]][1] + i[1]) / (q_table[i[0]][1] + 1), q_table[i[0]][1] + 1)
@@ -301,8 +301,11 @@ def play_2ai(epsilon):
     print(epsilon)
 
 def main():
-    for i in range(10):
-        print("gen:", i)
+    start_q_table = None
+    epsilon = 1
+    play_2ai(epsilon)
+    HM_EPISODES = 100000
+    for i in range(20):
         epsilon = 1
         play_2ai(epsilon)
 
