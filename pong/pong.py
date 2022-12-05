@@ -6,7 +6,13 @@ import pickle
 import time
 import math
 import copy
-
+#TODO: delete q-learning
+#TODO: make the env a class
+#TODO: arrange this into an environment: update(), check_bounce(), action(), move_left()
+#TODO: remake the ball movement
+#TODO: add a score
+#TODO: learn about DQN
+#TODO: make a neural network using tensorflow
 SCREEN = (160, 90)
 FPS = 30
 show = False
