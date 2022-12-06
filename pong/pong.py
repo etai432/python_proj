@@ -1,13 +1,11 @@
 import numpy as np
 from PIL import Image
 import cv2
-import matplotlib.pyplot as plt
-import pickle
 import time
 import math
-import copy
-#TODO: draw a bigger ball
-#TODO: add a scoring system and a rating system
+#TODO: draw a bigger ball- 3*3, pointer in the botton left
+#TODO: add a scoring system- first to 10 wins
+#TODO: add a rating system
 #TODO: learn about DQN
 #TODO: make a neural network using tensorflow | (ball.posx, posy, ball.posy, dx, dy)
 
@@ -40,11 +38,11 @@ class Paddle:
                 pixels[i][j] = (255, 255, 255)
 
 class Ball:
-    def __init__(self, posx, posy, speed, max, dx, dy, direction, radius, screen):
+    def __init__(self, posx, posy, speed, max_speed, dx, dy, direction, radius, screen):
         self.posx = posx
         self.posy = posy
         self.speed = speed
-        self.max_speed = max
+        self.max_speed = max_speed
         self.screen = screen
         self.direction_x = direction
         self.dx = dx * self.speed
@@ -57,17 +55,17 @@ class Ball:
         self.extra_x += self.dx
         self.extra_y += self.dy
         while self.extra_y > 1:
-                self.extra_y -= 1
-                self.posy += 1
+            self.extra_y -= 1
+            self.posy += 1
         while self.extra_y < -1:
-                self.extra_y += 1
-                self.posy -= 1
+            self.extra_y += 1
+            self.posy -= 1
         while self.extra_x > 1:
-                self.extra_x -= 1
-                self.posx += 1
+            self.extra_x -= 1
+            self.posx += 1
         while self.extra_x < -1:
-                self.extra_x += 1
-                self.posx -= 1
+            self.extra_x += 1
+            self.posx -= 1
         if self.posy > self.screen[1] - abs(self.extra_y) - 1:
             self.posy = self.screen[1] - 1
             self.dy *= -1
@@ -139,26 +137,30 @@ class Env():
         cv2.imshow("Window_name", np.array(img))
         cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
 
-
+    def random_play(self):
+        while self.check_win() == 1:
+            frame = time.time()
+            self.ball.update()
+            if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy, self.paddle1.length)
+                    self.ball.posx = self.paddle1.posx + self.paddle1.width
+                    self.ball.update()
+            if self.ball.posx >= self.paddle2.posx and self.ball.posx <= self.paddle2.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy, self.paddle2.length)
+                    self.ball.posx = self.paddle2.posx - 1
+                    self.ball.update()
+            self.frame(frame)
 
 def main():
     env = Env()
-    while True:
-        frame = time.time()
-        env.ball.update()
-        if env.ball.posx >= env.paddle1.posx and env.ball.posx <= env.paddle1.posx + env.ball.speed:
-            if env.ball.posy >= env.paddle1.posy and env.ball.posy <= (env.paddle1.posy + env.paddle1.length):
-                env.ball.change_speed()
-                env.ball.hit_paddle(env.ball.posy - env.paddle1.posy, env.paddle1.length)
-                env.ball.posx = env.paddle1.posx + env.paddle1.width
-                env.ball.update()
-        if env.ball.posx >= env.paddle2.posx and env.ball.posx <= env.paddle2.posx + env.ball.speed:
-            if env.ball.posy >= env.paddle2.posy and env.ball.posy <= (env.paddle2.posy + env.paddle2.length):
-                env.ball.change_speed()
-                env.ball.hit_paddle(env.ball.posy - env.paddle2.posy, env.paddle2.length)
-                env.ball.posx = env.paddle2.posx - 1
-                env.ball.update()
-        env.frame(frame)
+    env.random_play()
 
 if __name__ == "__main__":
+    start = time.time()
     main()
+    end = time.time() - start
+    print(f"{end // 60} minutes and {end % 60} seconds")
