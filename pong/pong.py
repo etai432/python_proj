@@ -17,9 +17,7 @@ class Paddle:
         self.posy = posy
         self.dir = direction
         self.screen = screen
-    
-    def clone(self):
-        return Paddle(self.length, self.width, self.posx, self.posy, self.dir, self.screen)
+        self.score = 0
 
     def action(self, action):
         if action == 0:
@@ -120,6 +118,7 @@ class Env():
         num1 = np.random.randint(0, 2)
         self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 5, self.screen)
         self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
+        self.score_pixel_size = 3
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -128,16 +127,17 @@ class Env():
             return 2
         return 1
     
-    def frame(self, frame_time):
+    def frame(self):
         self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
         self.ball.draw(self.env)
         self.paddle1.draw(self.env)
         self.paddle2.draw(self.env)
         img = Image.fromarray(self.env, "RGB")
-        cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        cv2.imshow("Window_name", np.array(img))
-        cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
+        return img
+        # cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
+        # cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # cv2.imshow("Window_name", np.array(img))
+        # cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
 
     def random_play(self):
         while self.check_win() == 1:
@@ -153,7 +153,8 @@ class Env():
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
-            self.frame(frame)
+            # self.frame(frame)
+        return self.check_win()
 
 def main():
     env = Env()
