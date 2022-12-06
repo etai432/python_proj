@@ -3,7 +3,6 @@ from PIL import Image
 import cv2
 import time
 import math
-#TODO: draw a bigger ball- 3*3, pointer in the botton left
 #TODO: add a scoring system- first to 10 wins
 #TODO: add a rating system
 #TODO: learn about DQN
@@ -66,16 +65,16 @@ class Ball:
         while self.extra_x < -1:
             self.extra_x += 1
             self.posx -= 1
-        if self.posy > self.screen[1] - abs(self.extra_y) - 1:
+        if self.posy > self.screen[1] - self.extra_y - 1:
             self.posy = self.screen[1] - 1
             self.dy *= -1
             self.extra_y *= -1
-        elif self.posy < abs(self.extra_y):
-            self.posy = 0
+        elif self.posy < self.radius:
+            self.posy = self.radius - 1
             self.dy *= -1
             self.extra_y *= -1
-        if self.posx > self.screen[0] - 1:
-            self.posx = self.screen[0] - 1
+        if self.posx > self.screen[0] - self.radius:
+            self.posx = self.screen[0] - self.radius
         elif self.posx < 0:
             self.posx = 0
 
@@ -87,7 +86,6 @@ class Ball:
             distance = hit - middle
         else:
             distance = hit + 1 - middle
-            print(distance)
         angle = distance / (length-2) * math.pi * 5 / 6
         self.dx = math.cos(angle) * self.direction_x * self.speed
         self.dy = math.sin(angle) * self.speed
@@ -95,6 +93,11 @@ class Ball:
     def change_speed(self):
         if self.speed < self.max_speed:
             self.speed += 0.1
+
+    def draw(self, pixels):
+        for i in range(self.radius):
+            for j in range(self.radius):
+                pixels[self.posy + i - self.radius + 1][self.posx + j] = (255, 255, 255)
 
 class Env():
     def __init__(self):
@@ -115,20 +118,19 @@ class Env():
         self.paddle1 = Paddle(70, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 10, self.screen)
+        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 5, self.screen)
         self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
 
     def check_win(self):
         if self.ball.posx == 0:
             return 0
-        if self.ball.posx == self.screen[0] - 1:
+        if self.ball.posx == self.screen[0] - self.ball.radius:
             return 2
         return 1
     
     def frame(self, frame_time):
         self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
-        #TODO: draw a bigger ball
-        self.env[self.ball.posy][self.ball.posx] = (255, 255, 255)
+        self.ball.draw(self.env)
         self.paddle1.draw(self.env)
         self.paddle2.draw(self.env)
         img = Image.fromarray(self.env, "RGB")
@@ -146,13 +148,11 @@ class Env():
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle1.posy, self.paddle1.length)
                     self.ball.posx = self.paddle1.posx + self.paddle1.width
-                    self.ball.update()
-            if self.ball.posx >= self.paddle2.posx and self.ball.posx <= self.paddle2.posx + self.ball.speed:
+            if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy, self.paddle2.length)
-                    self.ball.posx = self.paddle2.posx - 1
-                    self.ball.update()
+                    self.ball.posx = self.paddle2.posx - self.ball.radius
             self.frame(frame)
 
 def main():
@@ -163,4 +163,4 @@ if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time() - start
-    print(f"{end // 60} minutes and {end % 60} seconds")
+    print(f"the program took {end // 60} minutes and {int(end % 60)} seconds to finish")
