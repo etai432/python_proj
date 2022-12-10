@@ -3,9 +3,8 @@ from PIL import Image
 import cv2
 import time
 import math
-#TODO: change the hit spot to match the ball's size
-#TODO: learn about kivy
-#TODO: add the front-end to kivy
+#TODO: learn about pygame
+#TODO: add the front-end to pygame
 #TODO: add a scoring system- first to 10 wins
 #TODO: add a rating system
 #TODO: learn about DQN

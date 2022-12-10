@@ -1,52 +1,57 @@
+# Import the necessary Pygame modules
 import pygame
 
-# Initialize the pygame library
+# Initialize Pygame
 pygame.init()
 
 # Set the width and height of the screen
-screen = pygame.display.set_mode((400, 300))
+width = 800
+height = 600
+
+# Create a screen with the specified dimensions
+screen = pygame.display.set_mode((width, height))
 
 # Set the title of the window
-pygame.display.set_caption("Pygame: Drawing digits")
+pygame.display.set_caption("Pygame Digits")
 
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-# Set the font and font size
-font = pygame.font.Font(None, 32)
+# Create a font for rendering the digits
+font = pygame.font.SysFont("Arial", 24)
 
-# This function will draw a digit on the screen
-def draw_digit(digit, x, y):
-  # Render the text for the digit
-  text = font.render(str(digit), True, BLACK, WHITE)
-  
-  # Get the rectangle for the text
-  text_rect = text.get_rect()
-  
-  # Center the text on the screen
-  text_rect.center = (x, y)
-  
-  # Draw the text on the screen
-  screen.blit(text, text_rect)
+# This function will take a digit and dimensions as arguments and render it on the screen
+def render_digit(digit, width, height):
+  # Create a font with the specified dimensions
+  font = pygame.font.SysFont("Arial", width, height)
 
-# This is the main game loop
-done = False
-while not done:
-  # Handle events
+  # Create a surface with the specified digit rendered in white
+  surface = font.render(str(digit), True, WHITE)
+
+  # Calculate the x and y position of the surface on the screen
+  x = (screen.get_width() - width) / 2
+  y = (screen.get_height() - height) / 2
+
+  # Blit (draw) the surface onto the screen
+  screen.blit(surface, (x, y))
+
+# Main game loop
+running = True
+while running:
+  # Process events
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
-      done = True
-  
+      running = False
+
   # Clear the screen
-  screen.fill(WHITE)
-  
-  # Draw each digit on the screen
-  for i in range(10):
-    draw_digit(i, 50 + i * 30, 50)
-  
-  # Update the screen
+  screen.fill(BLACK)
+
+  # Render the digit 5 on the screen with dimensions 50x50
+  render_digit(5, 600, 600)
+
+  # Update the display
   pygame.display.flip()
 
-# Quit the game
+# Close the window and clean up Pygame
 pygame.quit()
