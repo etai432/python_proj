@@ -3,6 +3,7 @@ from PIL import Image
 import cv2
 import time
 import math
+#TODO: change everything to match the balls size
 #TODO: learn about kivy
 #TODO: add the front-end to kivy
 #TODO: add a scoring system- first to 10 wins
@@ -129,22 +130,31 @@ class Env():
             return 2
         return 1
     
-    def frame(self):
+    def show_frame(self, frame_time):
+        self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
+        self.ball.draw(self.env)
+        self.paddle1.draw(self.env)
+        self.paddle2.draw(self.env)
+        img = Image.fromarray(self.env, "RGB")
+        cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow("Window_name", np.array(img))
+        cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
+    
+    def return_frame(self):
         self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
         self.ball.draw(self.env)
         self.paddle1.draw(self.env)
         self.paddle2.draw(self.env)
         img = Image.fromarray(self.env, "RGB")
         return img
-        # cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
-        # cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        # cv2.imshow("Window_name", np.array(img))
-        # cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
 
     def random_play(self):
         while self.check_win() == 1:
             frame = time.time()
             self.ball.update()
+            self.paddle1.action(np.random.randint(0, 3))
+            self.paddle2.action(np.random.randint(0, 3))
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
@@ -155,7 +165,7 @@ class Env():
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
-            # self.frame(frame)
+            self.show_frame(frame)
         return self.check_win()
 
 def main():
