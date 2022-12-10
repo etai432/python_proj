@@ -3,7 +3,7 @@ from PIL import Image
 import cv2
 import time
 import math
-#TODO: change everything to match the balls size
+#TODO: change the hit spot to match the ball's size
 #TODO: learn about kivy
 #TODO: add the front-end to kivy
 #TODO: add a scoring system- first to 10 wins
@@ -87,7 +87,7 @@ class Ball:
             distance = hit - middle
         else:
             distance = hit + 1 - middle
-        angle = distance / (length-2) * math.pi * 5 / 6
+        angle = distance / (length-2) * math.pi * 2 / 3
         self.dx = math.cos(angle) * self.direction_x * self.speed
         self.dy = math.sin(angle) * self.speed
     
@@ -139,6 +139,7 @@ class Env():
         cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
         cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow("Window_name", np.array(img))
+        print(int((1/self.fps - time.time() + frame_time)*1000))
         cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
     
     def return_frame(self):
@@ -158,12 +159,12 @@ class Env():
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
-                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy, self.paddle1.length)
+                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
                     self.ball.posx = self.paddle1.posx + self.paddle1.width
             if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
                     self.ball.change_speed()
-                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy, self.paddle2.length)
+                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
             self.show_frame(frame)
         return self.check_win()
