@@ -3,6 +3,7 @@ from PIL import Image
 import cv2
 import time
 import math
+#TODO: make reset_pos for paddles and ball
 #TODO: learn about pygame
 #TODO: add the front-end to pygame
 #TODO: add a scoring system- first to 10 wins
@@ -138,7 +139,6 @@ class Env():
         cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
         cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow("Window_name", np.array(img))
-        print(int((1/self.fps - time.time() + frame_time)*1000))
         cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
     
     def return_frame(self):
@@ -170,6 +170,7 @@ class Env():
 
 def main():
     env = Env()
+    env.random_play()
     env.random_play()
 
 if __name__ == "__main__":
