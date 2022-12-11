@@ -3,7 +3,6 @@ from PIL import Image
 import cv2
 import time
 import math
-#TODO: make reset_pos for paddles and ball
 #TODO: learn about pygame
 #TODO: add the front-end to pygame
 #TODO: add a scoring system- first to 10 wins
@@ -14,6 +13,7 @@ import math
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
+        self.starting_state = (posx, posy)
         self.length = length
         self.width = width
         self.posx = posx
@@ -21,6 +21,10 @@ class Paddle:
         self.dir = direction
         self.screen = screen
         self.score = 0
+    
+    def reset(self):
+        self.posx = self.starting_state[0]
+        self.posy = self.starting_state[1]
 
     def action(self, action):
         if action == 0:
@@ -39,6 +43,7 @@ class Paddle:
 
 class Ball:
     def __init__(self, posx, posy, speed, max_speed, dx, dy, direction, radius, screen):
+        self.starting_state = (posx, posy, speed)
         self.posx = posx
         self.posy = posy
         self.speed = speed
@@ -51,6 +56,16 @@ class Ball:
         self.extra_y = 0
         self.radius = radius
     
+    def reset(self):
+        self.posx = self.starting_state[0]
+        self.posy = self.starting_state[1]
+        self.speed = self.starting_state[2]
+        self.direction_x = np.random.randint(0, 2) * 2 - 1
+        self.dx = self.direction_x * self.speed
+        self.dy = 0
+        self.extra_x = 0
+        self.extra_y = 0
+
     def update(self):
         self.extra_x += self.dx
         self.extra_y += self.dy
@@ -150,6 +165,9 @@ class Env():
         return img
 
     def random_play(self):
+        self.ball.reset()
+        self.paddle1.reset()
+        self.paddle2.reset()
         while self.check_win() == 1:
             frame = time.time()
             self.ball.update()
