@@ -245,8 +245,10 @@ class Env():
 
 def main():
     env = Env()
-    for i in range(100):
+    for i in range(10000):
         env.random_play()
+        if i % 1000 == 0:
+            print(int(i / 100), "%")
     env.save_dict()
 
 if __name__ == "__main__":
