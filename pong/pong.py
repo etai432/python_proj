@@ -25,7 +25,6 @@ class Paddle:
     def action(self, action):
         if action == 0:
             self.posy -= 5
-            self.rating += 
             if self.posy < 0:
                 self.posy = 0
         elif action == 2:
