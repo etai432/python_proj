@@ -2,7 +2,6 @@ import time
 import math
 import numpy as np
 import pygame
-#TODO: add a rating system
 #TODO: make a neural network using tensorflow | (ball.posx, posy, ball.posy, dx, dy)
 
 
@@ -187,13 +186,13 @@ class Env():
             pos_arr1.append((self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy))
             pos_arr2.append((self.ball.posx, self.ball.posy, self.paddle2.posy, self.ball.dx, self.ball.dy))
             if self.check_win() == 0:
-                self.paddle2.score += 1;
+                self.paddle2.score += 1
                 self.new_point()
                 pos_arr1 = self.rate(pos_arr1, -10)
                 self.save_to_dict(pos_arr1)
                 pos_arr1 = []
             elif self.check_win() == 2:
-                self.paddle1.score += 1;
+                self.paddle1.score += 1
                 self.new_point()
                 pos_arr2 = self.rate(pos_arr2, -10)
                 self.save_to_dict(pos_arr2)
