@@ -21,7 +21,7 @@ class Paddle:
     def reset(self):
         self.posx = self.starting_state[0]
         self.posy = self.starting_state[1]
-
+    
     def action(self, action):
         if action == 0:
             self.posy -= 5
@@ -107,14 +107,15 @@ class Ball:
 
 class Env():
     def __init__(self):
-        pygame.init()
         self.screen = (800, 600)
-        self.background = (0, 0, 0)
-        self.game_screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption('pong')
         self.fps = 30
+        self.dict = {}
         self.show = False
         if self.show:
+            pygame.init()
+            self.background = (0, 0, 0)
+            self.game_screen = pygame.display.set_mode((800, 600))
+            pygame.display.set_caption('pong')
             self.hm_episodes = 10
             self.show_every = 1
             self.epsilon = 0
@@ -142,39 +143,66 @@ class Env():
         self.ball.reset()
         self.paddle1.reset()
         self.paddle2.reset()
-        self.draw()
+        if self.show:
+            self.draw()
+    
+    def new_game(self):
+        self.new_point()
+        self.paddle1.score = 0
+        self.paddle2.score = 0
 
     def random_play(self):
-        self.new_point()
+        pos_arr1 = []
+        pos_arr2 = []
+        self.new_game()
         running = True
         while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
-            pygame.display.flip()
             frame_time = time.time()
+            if self.show:
+                pygame.display.flip()
             self.ball.update()
             self.paddle1.action(np.random.randint(0, 3))
             self.paddle2.action(np.random.randint(0, 3))
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                    pos_arr1 = self.rate(pos_arr1, 10)
+                    self.save_to_dict(pos_arr1)
+                    pos_arr1 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
                     self.ball.posx = self.paddle1.posx + self.paddle1.width
             if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                    pos_arr2 = self.rate(pos_arr2, 10)
+                    self.save_to_dict(pos_arr2)
+                    pos_arr2 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
-            self.draw()
-            for event in pygame.event.get():   
-                if event.type == pygame.QUIT:
-                    running = False
+            if self.show:
+                self.draw()
+                for event in pygame.event.get():   
+                    if event.type == pygame.QUIT:
+                        running = False
+            pos_arr1.append((self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy))
+            pos_arr2.append((self.ball.posx, self.ball.posy, self.paddle2.posy, self.ball.dx, self.ball.dy))
             if self.check_win() == 0:
                 self.paddle2.score += 1;
                 self.new_point()
+                pos_arr1 = self.rate(pos_arr1, -10)
+                self.save_to_dict(pos_arr1)
+                pos_arr1 = []
             elif self.check_win() == 2:
                 self.paddle1.score += 1;
                 self.new_point()
-            time.sleep(1/self.fps - time.time() + frame_time)
-        return self.check_win()
+                pos_arr2 = self.rate(pos_arr2, -10)
+                self.save_to_dict(pos_arr2)
+                pos_arr2 = []
+            if self.show:
+                time.sleep(1/self.fps - time.time() + frame_time)
+        if self.paddle1.score == 10:
+            return 0
+        return 2
 
     def draw(self):
         self.game_screen.fill(self.background)
@@ -192,13 +220,37 @@ class Env():
         text = font.render(str(text), True, color)
         self.game_screen.blit(text, position)
 
+    def rate(self, boards, reward):
+        rated = [(boards[0], reward)]
+        current = reward
+        for i in range(0, len(boards) - 1):
+            if boards[i][2] != boards[i + 1][2]:
+                current -= 0.1
+            rated.append((boards[i + 1], current))
+        return rated
+    
+    def save_to_dict(self, rated):
+        for i in rated:
+            if i[0] in self.dict:
+                self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+            else:
+                self.dict[i[0]] = (i[1], 1)
+
+    def save_dict(self):
+        with open('pong/data.csv', 'w') as output_file:
+            for key in self.dict:
+                output_file.write("%s,%s\n" % (key, self.dict[key][0]))
+        output_file.close()
+
 
 def main():
     env = Env()
-    env.random_play()
+    for i in range(100):
+        env.random_play()
+    env.save_dict()
 
 if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time() - start
-    print(f"the program took {end // 60} minutes and {int(end % 60)} seconds to finish")
+    print(f"the program took {int(end // 60)} minutes and {int(end % 60)} seconds to finish")
