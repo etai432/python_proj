@@ -1,12 +1,7 @@
-import numpy as np
-from PIL import Image
-import cv2
 import time
 import math
+import numpy as np
 import pygame
-#TODO: learn about pygame
-#TODO: add the front-end to pygame
-#TODO: add a scoring system- first to 10 wins
 #TODO: add a rating system
 #TODO: make a neural network using tensorflow | (ball.posx, posy, ball.posy, dx, dy)
 
@@ -21,6 +16,7 @@ class Paddle:
         self.dir = direction
         self.screen = screen
         self.score = 0
+        self.rect = pygame.Rect(self.posx, self.posy, self.width, self.length)
     
     def reset(self):
         self.posx = self.starting_state[0]
@@ -29,6 +25,7 @@ class Paddle:
     def action(self, action):
         if action == 0:
             self.posy -= 5
+            self.rating += 
             if self.posy < 0:
                 self.posy = 0
         elif action == 2:
@@ -36,10 +33,9 @@ class Paddle:
             if self.posy > self.screen[1] - self.length:
                 self.posy = self.screen[1] - self.length
     
-    def draw(self, pixels):
-        for i in range(self.posy, self.posy + self.length):
-            for j in range(self.posx, self.posx + self.width):
-                pixels[i][j] = (255, 255, 255)
+    def update_rect(self):
+        self.rect = pygame.Rect(self.posx, self.posy, self.width, self.length)
+
 
 class Ball:
     def __init__(self, posx, posy, speed, max_speed, dx, dy, direction, radius, screen):
@@ -110,18 +106,13 @@ class Ball:
         if self.speed < self.max_speed:
             self.speed += 0.1
 
-    def draw(self, pixels):
-        for i in range(self.radius):
-            for j in range(self.radius):
-                pixels[self.posy + i - self.radius + 1][self.posx + j] = (255, 255, 255)
-
 class Env():
     def __init__(self):
+        pygame.init()
         self.screen = (800, 600)
-        self.background = (255, 255, 255)
-        self.game_screen = pygame.display.set_mode((300, 300))
-        pygame.display.set_caption('test')
-        self.game_screen.fill(self.background)
+        self.background = (0, 0, 0)
+        self.game_screen = pygame.display.set_mode((800, 600))
+        pygame.display.set_caption('pong')
         self.fps = 30
         self.show = False
         if self.show:
@@ -138,8 +129,7 @@ class Env():
         self.paddle1 = Paddle(70, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 5, self.screen)
-        self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
+        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
         self.score_pixel_size = 3
 
     def check_win(self):
@@ -149,32 +139,18 @@ class Env():
             return 2
         return 1
     
-    # def show_frame(self, frame_time):
-    #     self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
-    #     self.ball.draw(self.env)
-    #     self.paddle1.draw(self.env)
-    #     self.paddle2.draw(self.env)
-    #     img = Image.fromarray(self.env, "RGB")
-    #     cv2.namedWindow("Window_name", cv2.WINDOW_NORMAL)
-    #     cv2.setWindowProperty("Window_name", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-    #     cv2.imshow("Window_name", np.array(img))
-    #     cv2.waitKey(int((1/self.fps - time.time() + frame_time)*1000))
-    
-    # def return_frame(self):
-    #     self.env = np.zeros((self.screen[1], self.screen[0], 3), dtype=np.uint8)
-    #     self.ball.draw(self.env)
-    #     self.paddle1.draw(self.env)
-    #     self.paddle2.draw(self.env)
-    #     img = Image.fromarray(self.env, "RGB")
-    #     return img
-
-    def random_play(self):
+    def new_point(self):
         self.ball.reset()
         self.paddle1.reset()
         self.paddle2.reset()
-        while self.check_win() == 1:
+        self.draw()
+
+    def random_play(self):
+        self.new_point()
+        running = True
+        while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
             pygame.display.flip()
-            frame = time.time()
+            frame_time = time.time()
             self.ball.update()
             self.paddle1.action(np.random.randint(0, 3))
             self.paddle2.action(np.random.randint(0, 3))
@@ -188,12 +164,38 @@ class Env():
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
-            #draw the paddles and the ball
+            self.draw()
+            for event in pygame.event.get():   
+                if event.type == pygame.QUIT:
+                    running = False
+            if self.check_win() == 0:
+                self.paddle2.score += 1;
+                self.new_point()
+            elif self.check_win() == 2:
+                self.paddle1.score += 1;
+                self.new_point()
+            time.sleep(1/self.fps - time.time() + frame_time)
         return self.check_win()
+
+    def draw(self):
+        self.game_screen.fill(self.background)
+        pygame.draw.line(self.game_screen, (100, 100, 100), (self.screen[0] // 2, 0), (self.screen[0] // 2, self.screen[1]), 2)
+        self.display((310, 20), self.paddle1.score)
+        self.display((460, 20), self.paddle2.score)
+        self.paddle1.update_rect()
+        self.paddle2.update_rect()
+        pygame.draw.rect(self.game_screen, (255, 255, 255), self.paddle1.rect)
+        pygame.draw.rect(self.game_screen, (255, 255, 255), self.paddle2.rect)
+        pygame.draw.circle(self.game_screen, (255, 255, 255), (self.ball.posx, self.ball.posy), self.ball.radius)
+
+    def display(self, position, text, color=(255, 255, 255)):
+        font = pygame.font.SysFont("Arial", 50, 50)
+        text = font.render(str(text), True, color)
+        self.game_screen.blit(text, position)
+
 
 def main():
     env = Env()
-    env.random_play()
     env.random_play()
 
 if __name__ == "__main__":
