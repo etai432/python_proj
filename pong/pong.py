@@ -2,6 +2,7 @@ import time
 import math
 import numpy as np
 import pygame
+import tensorflow as tf
 #1. predict best action
 #2. do the action
 #3.rate the wanted actions (0, 0.5, 1)
@@ -121,6 +122,7 @@ class Env():
         self.fps = 30
         self.dict1 = {}
         self.dict2 = {}
+        self.model = self.make_model()
         self.show = True
         if self.show:
             pygame.init()
@@ -172,7 +174,7 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            self.paddle1.action(np.random.randint(0, 3))
+            self.paddle1.action(np.argmax(self.model.predict(np.ndarray([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]))[0]))
             self.paddle2.action(np.random.randint(0, 3))
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -292,9 +294,16 @@ class Env():
         elif d < 0 and d // 5 - 1 < counter * 1.5:
             return [1, 0.3, 0]
         
-
-
-
+    def make_model(self):
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Input(shape=(5,)))
+        model.add(tf.keras.layers.Dense(16))
+        model.add(tf.keras.layers.Dense(8))
+        model.add(tf.keras.layers.Dense(3))
+        model.compile(optimizer='Adam', loss='mse', metrics=["mae"])
+        print(model.summary())
+        return model
+        
 def main():
     env = Env()
     for i in range(100):
