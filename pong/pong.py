@@ -317,7 +317,6 @@ def main():
     env.save_dict()
 
 if __name__ == "__main__":
-    tf.config.list_physical_devices('GPU') 
     start = time.time()
     main()
     end = time.time() - start
