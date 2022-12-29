@@ -4,8 +4,8 @@ import numpy as np
 import pygame
 #1. predict best action
 #2. do the action
-#3. store the experience - experience = (state, action, reward)
-#4. update the model - model.fit(state, action, epochs=1, verbose=0)
+#3.rate the wanted actions (0, 0.5, 1)
+#4. update the model - model.fit(state, vec[action], epochs=1, verbose=0)
 #TODO: hard code ai for paddle 2 (right paddle)
 #TODO: make a training model function
 #TODO: rewrite the rewarding system
@@ -44,7 +44,7 @@ class Paddle:
 
 
 class Ball:
-    def __init__(self, posx, posy, speed, max_speed, dx, dy, direction, radius, screen):
+    def __init__(self, posx, posy, speed, max_speed, dx, dy, direction, radius, screen, extra_x=0, extra_y=0):
         self.starting_state = (posx, posy, speed)
         self.posx = posx
         self.posy = posy
@@ -54,9 +54,12 @@ class Ball:
         self.direction_x = direction
         self.dx = dx * self.speed
         self.dy = dy * self.speed
-        self.extra_x = 0
-        self.extra_y = 0
+        self.extra_x = extra_x
+        self.extra_y = extra_y
         self.radius = radius
+    
+    def copy(self):
+        return Ball(self.posx, self.posy, self.speed, self.max_speed, self.dx, self.dy, self.direction_x, self.radius, self.screen)
     
     def reset(self):
         self.posx = self.starting_state[0]
@@ -118,7 +121,7 @@ class Env():
         self.fps = 30
         self.dict1 = {}
         self.dict2 = {}
-        self.show = False
+        self.show = True
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -259,6 +262,33 @@ class Env():
                     output_file.write("%s," % i)
                 output_file.write("%s\n" % (self.dict2[key][0]))
         output_file.close()
+
+    def predict_hit_y(self):
+        ball1 = self.ball.copy()
+        counter = 0
+        if ball1.dx > 0:
+            while ball1.posx < self.paddle2.posx:
+                ball1.update()
+                counter += 1
+        else:
+            while ball1.posx > self.paddle1.posx:
+                ball1.update()
+                counter += 1
+        return (ball1.posy, counter)
+
+    def get_target(self):
+        (end, counter) = self.predict_hit_y()
+        d = self.paddle1.posx - end + self.paddle1.length/2
+        if d > 0 and d // 5 + 1 < counter * 1.5:
+            return [0, 1, 0.5]
+        elif d > 0 and d // 5 + 1 > counter * 1.5:
+            return [0, 0.5, 1]
+        elif d < 0 and d // 5 - 1 > counter * 1.5:
+            return [0.5, 1, 0]
+        elif d < 0 and d // 5 - 1 < counter * 1.5:
+            return [1, 0.5, 0]
+        
+
 
 
 def main():
