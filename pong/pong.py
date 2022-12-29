@@ -3,14 +3,7 @@ import math
 import numpy as np
 import pygame
 import tensorflow as tf
-#1. predict best action
-#2. do the action
-#3.rate the wanted actions (0, 0.5, 1)
-#4. update the model - model.fit(state, vec[action], epochs=1, verbose=0)
-#TODO:possibly add memory and train from memory
 #TODO: hard code ai for paddle 2 (right paddle)
-#TODO: make a training model function
-#TODO: make a neural network using tensorflow | input = (ball.posx, posy, ball.posy, dx, dy) | output = (action 0, action 1, action 2)
 #TODO: train against the hard coded paddle
 
 
@@ -120,10 +113,10 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 24
-        self.dict1 = {}
-        self.dict2 = {}
-        self.model = self.make_model()
-        self.show = True
+        self.max_steps = 25000
+        # self.model = self.make_model()
+        self.model = self.make_model('pong/pong_model.h5')
+        self.show = False
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -143,7 +136,6 @@ class Env():
         self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
         self.ball = Ball(400, 300, int(5 * 30 / self.fps), 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
-        self.score_pixel_size = 3
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -164,33 +156,32 @@ class Env():
         self.paddle1.score = 0
         self.paddle2.score = 0
 
-    def random_play(self):
-        # pos_arr1 = []
-        # pos_arr2 = []
+    def train_network(self):
+        memory_x = []
+        memory_y = []
         self.new_game()
+        counter = 0
+        touch = 0
         running = True
-        while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
+        while self.paddle1.score < 10 and self.paddle2.score < 10 and running and counter < self.max_steps:
             frame_time = time.time()
+            counter += 1
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            pred = self.model.predict([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy], verbose=0)[0]
-            # print(pred)
-            self.paddle1.action(np.argmax(pred))
-            self.paddle2.action(np.random.randint(0, 3))
+            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]]))[0])
+            self.paddle1.action(act)
+            self.paddle2.action(self.ai2())
+            memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy])
+            memory_y.append(self.get_target())
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
-                    # pos_arr1 = self.rate(pos_arr1, 10)
-                    # self.save_to_dict(pos_arr1, self.dict1)
-                    # pos_arr1 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
                     self.ball.posx = self.paddle1.posx + self.paddle1.width
+                    touch += 1
             if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
-                    # pos_arr2 = self.rate(pos_arr2, 10)
-                    # self.save_to_dict(pos_arr2, self.dict2)
-                    # pos_arr2 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
@@ -199,24 +190,19 @@ class Env():
                 for event in pygame.event.get():   
                     if event.type == pygame.QUIT:
                         running = False
-            # pos_arr1.append((self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy))
-            # pos_arr2.append((self.ball.posx, self.ball.posy, self.paddle2.posy, self.ball.dx, self.ball.dy))
             if self.check_win() == 0:
                 self.paddle2.score += 1
                 self.new_point()
-                # pos_arr1 = self.rate(pos_arr1, -10)
-                # self.save_to_dict(pos_arr1, self.dict1)
-                # pos_arr1 = []
             elif self.check_win() == 2:
                 self.paddle1.score += 1
                 self.new_point()
-                # pos_arr2 = self.rate(pos_arr2, -10)
-                # self.save_to_dict(pos_arr2, self.dict2)
-                # pos_arr2 = []
             if self.show:
-                # time.sleep(1/self.fps - time.time() + frame_time)
-                pass
-            # print(1/self.fps - time.time() + frame_time)
+                if 1/self.fps - time.time() + frame_time > 0:
+                    time.sleep(1/self.fps - time.time() + frame_time)
+                    pass
+        print("frames:", counter)
+        self.model.fit(np.array(memory_x), np.array(memory_y), verbose=0, epochs=5)
+        print("touched:", touch)
         if self.paddle1.score == 10:
             return 0
         return 2
@@ -236,38 +222,6 @@ class Env():
         font = pygame.font.SysFont("Arial", 50, 50)
         text = font.render(str(text), True, color)
         self.game_screen.blit(text, position)
-
-    def rate(self, boards, reward):
-        rated = [(boards[0], reward)]
-        current = reward
-        for i in range(0, len(boards) - 1):
-            if boards[i][2] != boards[i + 1][2]:
-                current -= 0.1
-            rated.append((boards[i + 1], current))
-        return rated
-    
-    def save_to_dict(self, rated, dict1):
-        for i in rated:
-            if i[0] in dict1:
-                dict1[i[0]] = ((dict1[i[0]][0] * dict1[i[0]][1] + i[1]) / (dict1[i[0]][1] + 1), dict1[i[0]][1] + 1)
-            else:
-                dict1[i[0]] = (i[1], 1)
-
-    def save_dict(self):
-        with open('pong/data1.csv', 'w') as output_file:
-            for key in self.dict1:
-                keys = list(key)
-                for i in keys:
-                    output_file.write("%s," % i)
-                output_file.write("%s\n" % (self.dict1[key][0]))
-        output_file.close()
-        with open('pong/data2.csv', 'w') as output_file:
-            for key in self.dict2:
-                keys = list(key)
-                for i in keys:
-                    output_file.write("%s," % i)
-                output_file.write("%s\n" % (self.dict2[key][0]))
-        output_file.close()
 
     def predict_hit_y(self):
         ball1 = self.ball.copy()
@@ -290,33 +244,48 @@ class Env():
         if d > 0 and d > self.paddle1.length/2:
             return [0, 1, 0]
         if d > 0 and d // 5 + 1 < counter * 1.5:
-            return [0, 1, 0.5]
-        elif d > 0 and d // 5 + 1 > counter * 1.5:
-            return [0, 0.3, 1]
+            return [0, 1, 0.3]
+        elif d > 0 and d // 5 + 1 >= counter * 1.5:
+            return [0, 0, 1]
         elif d < 0 and d // 5 - 1 > counter * 1.5:
-            return [0.5, 1, 0]
-        elif d < 0 and d // 5 - 1 < counter * 1.5:
-            return [1, 0.3, 0]
+            return [0.3, 1, 0]
+        elif d < 0 and d // 5 - 1 <= counter * 1.5:
+            return [1, 0, 0]
+        return [0, 1, 0]
+    
+    def ai2(self):
+        if self.ball.posy > self.paddle2.posy + self.paddle2.length - 2:
+            return 2
+        elif self.ball.posy < self.paddle2.posy + 2:
+            return 0
+        else:
+            return np.random.randint(0, 3)
         
     def make_model(self, path=None):
         if path == None:
             model = tf.keras.Sequential()
-            model.add(tf.keras.layers.Input(shape=(1,)))
+            model.add(tf.keras.layers.Input(shape=(5,)))
+            model.add(tf.keras.layers.Dense(16))
             model.add(tf.keras.layers.Dense(8))
             model.add(tf.keras.layers.Dense(3))
             model.compile(optimizer='Adam', loss='mse')
             return model
         else:
-            pass
-            #TODO: load model from path
+            model = tf.keras.models.load_model(path)
+            return model
+    
+    def save_model(self):
+        self.model.save("pong/pong_model.h5")
         
 def main():
     env = Env()
     for i in range(100):
-        env.random_play()
-        if i % 1000 == 0:
-            print(int(i / 100), "%")
-    env.save_dict()
+        env.train_network()
+        print(i)
+        if i % 10 == 0:
+            env.save_model()
+    env.save_model()
+    
 
 if __name__ == "__main__":
     start = time.time()
