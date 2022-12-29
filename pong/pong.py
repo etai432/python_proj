@@ -279,14 +279,18 @@ class Env():
     def get_target(self):
         (end, counter) = self.predict_hit_y()
         d = self.paddle1.posx - end + self.paddle1.length/2
+        if d < 0 and d > -self.paddle1.length/2:
+            return [0, 1, 0]
+        if d > 0 and d > self.paddle1.length/2:
+            return [0, 1, 0]
         if d > 0 and d // 5 + 1 < counter * 1.5:
             return [0, 1, 0.5]
         elif d > 0 and d // 5 + 1 > counter * 1.5:
-            return [0, 0.5, 1]
+            return [0, 0.3, 1]
         elif d < 0 and d // 5 - 1 > counter * 1.5:
             return [0.5, 1, 0]
         elif d < 0 and d // 5 - 1 < counter * 1.5:
-            return [1, 0.5, 0]
+            return [1, 0.3, 0]
         
 
 
