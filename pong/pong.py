@@ -7,9 +7,9 @@ import tensorflow as tf
 #2. do the action
 #3.rate the wanted actions (0, 0.5, 1)
 #4. update the model - model.fit(state, vec[action], epochs=1, verbose=0)
+#TODO:possibly add memory and train from memory
 #TODO: hard code ai for paddle 2 (right paddle)
 #TODO: make a training model function
-#TODO: rewrite the rewarding system
 #TODO: make a neural network using tensorflow | input = (ball.posx, posy, ball.posy, dx, dy) | output = (action 0, action 1, action 2)
 #TODO: train against the hard coded paddle
 
@@ -142,7 +142,7 @@ class Env():
         self.paddle1 = Paddle(70, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, int(5 * 30 / self.fps), 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
         self.score_pixel_size = 3
 
     def check_win(self):
@@ -174,9 +174,7 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            start = time.time()
             pred = self.model.predict([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy], verbose=0)[0]
-            print(time.time() - start)
             # print(pred)
             self.paddle1.action(np.argmax(pred))
             self.paddle2.action(np.random.randint(0, 3))
@@ -300,13 +298,17 @@ class Env():
         elif d < 0 and d // 5 - 1 < counter * 1.5:
             return [1, 0.3, 0]
         
-    def make_model(self):
-        model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Input(shape=(1,)))
-        model.add(tf.keras.layers.Dense(8))
-        model.add(tf.keras.layers.Dense(3))
-        model.compile(optimizer='Adam', loss='mse')
-        return model
+    def make_model(self, path=None):
+        if path == None:
+            model = tf.keras.Sequential()
+            model.add(tf.keras.layers.Input(shape=(1,)))
+            model.add(tf.keras.layers.Dense(8))
+            model.add(tf.keras.layers.Dense(3))
+            model.compile(optimizer='Adam', loss='mse')
+            return model
+        else:
+            pass
+            #TODO: load model from path
         
 def main():
     env = Env()
