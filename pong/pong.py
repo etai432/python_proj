@@ -119,7 +119,7 @@ class Ball:
 class Env():
     def __init__(self):
         self.screen = (800, 600)
-        self.fps = 30
+        self.fps = 24
         self.dict1 = {}
         self.dict2 = {}
         self.model = self.make_model()
@@ -165,8 +165,8 @@ class Env():
         self.paddle2.score = 0
 
     def random_play(self):
-        pos_arr1 = []
-        pos_arr2 = []
+        # pos_arr1 = []
+        # pos_arr2 = []
         self.new_game()
         running = True
         while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
@@ -174,21 +174,25 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            self.paddle1.action(np.argmax(self.model.predict(np.ndarray([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]))[0]))
+            start = time.time()
+            pred = self.model.predict([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy], verbose=0)[0]
+            print(time.time() - start)
+            # print(pred)
+            self.paddle1.action(np.argmax(pred))
             self.paddle2.action(np.random.randint(0, 3))
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
-                    pos_arr1 = self.rate(pos_arr1, 10)
-                    self.save_to_dict(pos_arr1, self.dict1)
-                    pos_arr1 = []
+                    # pos_arr1 = self.rate(pos_arr1, 10)
+                    # self.save_to_dict(pos_arr1, self.dict1)
+                    # pos_arr1 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
                     self.ball.posx = self.paddle1.posx + self.paddle1.width
             if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
-                    pos_arr2 = self.rate(pos_arr2, 10)
-                    self.save_to_dict(pos_arr2, self.dict2)
-                    pos_arr2 = []
+                    # pos_arr2 = self.rate(pos_arr2, 10)
+                    # self.save_to_dict(pos_arr2, self.dict2)
+                    # pos_arr2 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
@@ -197,22 +201,24 @@ class Env():
                 for event in pygame.event.get():   
                     if event.type == pygame.QUIT:
                         running = False
-            pos_arr1.append((self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy))
-            pos_arr2.append((self.ball.posx, self.ball.posy, self.paddle2.posy, self.ball.dx, self.ball.dy))
+            # pos_arr1.append((self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy))
+            # pos_arr2.append((self.ball.posx, self.ball.posy, self.paddle2.posy, self.ball.dx, self.ball.dy))
             if self.check_win() == 0:
                 self.paddle2.score += 1
                 self.new_point()
-                pos_arr1 = self.rate(pos_arr1, -10)
-                self.save_to_dict(pos_arr1, self.dict1)
-                pos_arr1 = []
+                # pos_arr1 = self.rate(pos_arr1, -10)
+                # self.save_to_dict(pos_arr1, self.dict1)
+                # pos_arr1 = []
             elif self.check_win() == 2:
                 self.paddle1.score += 1
                 self.new_point()
-                pos_arr2 = self.rate(pos_arr2, -10)
-                self.save_to_dict(pos_arr2, self.dict2)
-                pos_arr2 = []
+                # pos_arr2 = self.rate(pos_arr2, -10)
+                # self.save_to_dict(pos_arr2, self.dict2)
+                # pos_arr2 = []
             if self.show:
-                time.sleep(1/self.fps - time.time() + frame_time)
+                # time.sleep(1/self.fps - time.time() + frame_time)
+                pass
+            # print(1/self.fps - time.time() + frame_time)
         if self.paddle1.score == 10:
             return 0
         return 2
@@ -296,12 +302,10 @@ class Env():
         
     def make_model(self):
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Input(shape=(5,)))
-        model.add(tf.keras.layers.Dense(16))
+        model.add(tf.keras.layers.Input(shape=(1,)))
         model.add(tf.keras.layers.Dense(8))
         model.add(tf.keras.layers.Dense(3))
-        model.compile(optimizer='Adam', loss='mse', metrics=["mae"])
-        print(model.summary())
+        model.compile(optimizer='Adam', loss='mse')
         return model
         
 def main():
@@ -313,6 +317,7 @@ def main():
     env.save_dict()
 
 if __name__ == "__main__":
+    tf.config.list_physical_devices('GPU') 
     start = time.time()
     main()
     end = time.time() - start
