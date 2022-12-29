@@ -2,7 +2,15 @@ import time
 import math
 import numpy as np
 import pygame
-#TODO: make a neural network using tensorflow | (ball.posx, posy, ball.posy, dx, dy)
+#1. predict best action
+#2. do the action
+#3. store the experience - experience = (state, action, reward)
+#4. update the model - model.fit(state, action, epochs=1, verbose=0)
+#TODO: hard code ai for paddle 2 (right paddle)
+#TODO: make a training model function
+#TODO: rewrite the rewarding system
+#TODO: make a neural network using tensorflow | input = (ball.posx, posy, ball.posy, dx, dy) | output = (action 0, action 1, action 2)
+#TODO: train against the hard coded paddle
 
 
 class Paddle:
@@ -108,7 +116,8 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 30
-        self.dict = {}
+        self.dict1 = {}
+        self.dict2 = {}
         self.show = False
         if self.show:
             pygame.init()
@@ -165,7 +174,7 @@ class Env():
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     pos_arr1 = self.rate(pos_arr1, 10)
-                    self.save_to_dict(pos_arr1)
+                    self.save_to_dict(pos_arr1, self.dict1)
                     pos_arr1 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
@@ -173,7 +182,7 @@ class Env():
             if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
                     pos_arr2 = self.rate(pos_arr2, 10)
-                    self.save_to_dict(pos_arr2)
+                    self.save_to_dict(pos_arr2, self.dict2)
                     pos_arr2 = []
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
@@ -189,13 +198,13 @@ class Env():
                 self.paddle2.score += 1
                 self.new_point()
                 pos_arr1 = self.rate(pos_arr1, -10)
-                self.save_to_dict(pos_arr1)
+                self.save_to_dict(pos_arr1, self.dict1)
                 pos_arr1 = []
             elif self.check_win() == 2:
                 self.paddle1.score += 1
                 self.new_point()
                 pos_arr2 = self.rate(pos_arr2, -10)
-                self.save_to_dict(pos_arr2)
+                self.save_to_dict(pos_arr2, self.dict2)
                 pos_arr2 = []
             if self.show:
                 time.sleep(1/self.fps - time.time() + frame_time)
@@ -228,23 +237,33 @@ class Env():
             rated.append((boards[i + 1], current))
         return rated
     
-    def save_to_dict(self, rated):
+    def save_to_dict(self, rated, dict1):
         for i in rated:
-            if i[0] in self.dict:
-                self.dict[i[0]] = ((self.dict[i[0]][0] * self.dict[i[0]][1] + i[1]) / (self.dict[i[0]][1] + 1), self.dict[i[0]][1] + 1)
+            if i[0] in dict1:
+                dict1[i[0]] = ((dict1[i[0]][0] * dict1[i[0]][1] + i[1]) / (dict1[i[0]][1] + 1), dict1[i[0]][1] + 1)
             else:
-                self.dict[i[0]] = (i[1], 1)
+                dict1[i[0]] = (i[1], 1)
 
     def save_dict(self):
-        with open('pong/data.csv', 'w') as output_file:
-            for key in self.dict:
-                output_file.write("%s,%s\n" % (key, self.dict[key][0]))
+        with open('pong/data1.csv', 'w') as output_file:
+            for key in self.dict1:
+                keys = list(key)
+                for i in keys:
+                    output_file.write("%s," % i)
+                output_file.write("%s\n" % (self.dict1[key][0]))
+        output_file.close()
+        with open('pong/data2.csv', 'w') as output_file:
+            for key in self.dict2:
+                keys = list(key)
+                for i in keys:
+                    output_file.write("%s," % i)
+                output_file.write("%s\n" % (self.dict2[key][0]))
         output_file.close()
 
 
 def main():
     env = Env()
-    for i in range(10000):
+    for i in range(100):
         env.random_play()
         if i % 1000 == 0:
             print(int(i / 100), "%")
