@@ -3,8 +3,10 @@ import math
 import numpy as np
 import pygame
 import tensorflow as tf
-#TODO: hard code ai for paddle 2 (right paddle)
-#TODO: train against the hard coded paddle
+import pickle
+import random
+from sklearn.model_selection import train_test_split
+#TODO: make a big saved memory, train a game from there
 
 
 class Paddle:
@@ -114,9 +116,12 @@ class Env():
         self.screen = (800, 600)
         self.fps = 24
         self.max_steps = 25000
-        # self.model = self.make_model()
-        self.model = self.make_model('pong/pong_model.h5')
+        self.model = self.make_model()
+        # self.model = self.make_model('pong/pong_model.h5')
         self.show = False
+        # self.memory = []
+        with open(f"pong/memory.pickle", "rb") as f:
+            self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -170,10 +175,12 @@ class Env():
                 pygame.display.flip()
             self.ball.update()
             act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]]))[0])
+            # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]]))[0])
             self.paddle1.action(act)
             self.paddle2.action(self.ai2())
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy])
             memory_y.append(self.get_target())
+            # print(self.get_target())
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
@@ -201,7 +208,11 @@ class Env():
                     time.sleep(1/self.fps - time.time() + frame_time)
                     pass
         print("frames:", counter)
-        self.model.fit(np.array(memory_x), np.array(memory_y), verbose=0, epochs=5)
+        self.memory.append((np.array(memory_x), np.array(memory_y)))
+        # batch = random.sample(self.memory, min(len(self.memory)//4 + 1, 32))
+        # x_train = np.concatenate([i[0] for i in batch])
+        # y_train = np.concatenate([i[1] for i in batch])
+        # self.model.fit(x_train, y_train, verbose=0, epochs=1)
         print("touched:", touch)
         if self.paddle1.score == 10:
             return 0
@@ -225,38 +236,32 @@ class Env():
 
     def predict_hit_y(self):
         ball1 = self.ball.copy()
-        counter = 0
         if ball1.dx > 0:
-            while ball1.posx < self.paddle2.posx:
-                ball1.update()
-                counter += 1
+            return 1000
         else:
             while ball1.posx > self.paddle1.posx:
                 ball1.update()
-                counter += 1
-        return (ball1.posy, counter)
+        return ball1.posy
 
     def get_target(self):
-        (end, counter) = self.predict_hit_y()
-        d = self.paddle1.posx - end + self.paddle1.length/2
-        if d < 0 and d > -self.paddle1.length/2:
+        end1 = self.predict_hit_y()
+        if end1 == 1000:
             return [0, 1, 0]
-        if d > 0 and d > self.paddle1.length/2:
+        d = self.paddle1.posy + self.paddle1.length/2 - end1
+        if d < 0 and d >= -self.paddle1.length/2 + 4:
             return [0, 1, 0]
-        if d > 0 and d // 5 + 1 < counter * 1.5:
-            return [0, 1, 0.3]
-        elif d > 0 and d // 5 + 1 >= counter * 1.5:
-            return [0, 0, 1]
-        elif d < 0 and d // 5 - 1 > counter * 1.5:
-            return [0.3, 1, 0]
-        elif d < 0 and d // 5 - 1 <= counter * 1.5:
+        elif d > 0 and d <= self.paddle1.length/2 - 4:
+            return [0, 1, 0]
+        elif d > self.paddle1.length/2 + 4:
             return [1, 0, 0]
+        elif d < -self.paddle1.length/2 - 4:
+            return [0, 0, 1]
         return [0, 1, 0]
     
     def ai2(self):
-        if self.ball.posy > self.paddle2.posy + self.paddle2.length - 2:
+        if self.ball.posy > self.paddle2.posy + self.paddle2.length - 8:
             return 2
-        elif self.ball.posy < self.paddle2.posy + 2:
+        elif self.ball.posy < self.paddle2.posy + 8:
             return 0
         else:
             return np.random.randint(0, 3)
@@ -265,27 +270,41 @@ class Env():
         if path == None:
             model = tf.keras.Sequential()
             model.add(tf.keras.layers.Input(shape=(5,)))
-            model.add(tf.keras.layers.Dense(16))
-            model.add(tf.keras.layers.Dense(8))
-            model.add(tf.keras.layers.Dense(3))
-            model.compile(optimizer='Adam', loss='mse')
+            model.add(tf.keras.layers.Dense(1024,activation="relu"))
+            model.add(tf.keras.layers.Dense(512,activation="relu"))
+            model.add(tf.keras.layers.Dense(256,activation="relu"))
+            model.add(tf.keras.layers.Dense(3, activation="softmax"))
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0000001), loss='categorical_crossentropy')
             return model
         else:
             model = tf.keras.models.load_model(path)
             return model
     
+    def train_model(self):
+        x = np.concatenate([i[0] for i in self.memory])
+        y = np.concatenate([i[1] for i in self.memory])
+        x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
+        x_train = np.array_split(x_train, 10)
+        y_train = np.array_split(y_train, 10)
+        for i in range(10):
+            self.model.fit(x_train[i], y_train[i])
+        self.model.evaluate(x_test, y_test)
+
     def save_model(self):
         self.model.save("pong/pong_model.h5")
+        with open(f"pong/memory.pickle", "wb") as f:
+            pickle.dump(self.memory, f)
         
 def main():
     env = Env()
-    for i in range(100):
-        env.train_network()
-        print(i)
-        if i % 10 == 0:
-            env.save_model()
+    # for i in range(1000):
+    #     env.train_network()
+    #     print(i)F
+    # env.save_model()
+    env.train_model()
     env.save_model()
-    
+    # env.train_network()
+
 
 if __name__ == "__main__":
     start = time.time()
