@@ -304,7 +304,7 @@ class Env():
         y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
-            self.model.fit(x_train[i], y_train[i], epochs=5, validation_split=0.1)
+            self.model.fit(x_train[i], y_train[i], epochs=3, validation_split=0.1)
         print(self.model.evaluate(x_test, y_test))
 
     def save_model(self):
