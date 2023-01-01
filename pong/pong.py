@@ -119,9 +119,9 @@ class Env():
         # self.model = self.make_model()
         self.model = self.make_model('pong/pong_model.h5')
         self.show = True
-        self.memory = []
-        # with open(f"pong/memory.pickle", "rb") as f:
-        #     self.memory = pickle.load(f)
+        # self.memory = []
+        with open(f"pong/memory1.pickle", "rb") as f:
+            self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -309,19 +309,19 @@ class Env():
 
     def save_model(self):
         self.model.save("pong/pong_model.h5")
-        with open(f"pong/memory.pickle", "wb") as f:
-            pickle.dump(self.memory, f)
+        # with open(f"pong/memory.pickle", "wb") as f:
+        #     pickle.dump(self.memory, f)
         with open(f"pong/memory1.pickle", "wb") as f:
             pickle.dump(self.memory, f)
         
 def main():
     env = Env()
-    for i in range(20000):
-        env.train_network()
-        print(i)
+    # for i in range(20000):
+    #     env.train_network()
+    #     print(i)
     # env.save_model()
-    # env.train_model()
-    # env.save_model()
+    env.train_model()
+    env.save_model()
     # env.train_network()
 
 
