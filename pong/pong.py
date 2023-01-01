@@ -109,16 +109,16 @@ class Ball:
     
     def change_speed(self):
         if self.speed < self.max_speed:
-            self.speed += 0.1
+            self.speed += 0.2
 
 class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 60
-        self.max_steps = 100000
-        # self.model = self.make_model()
-        self.model = self.make_model('pong/pong_model.h5')
-        self.show = True
+        self.max_steps = 2500
+        self.model = self.make_model()
+        # self.model = self.make_model('pong/pong_model.h5')
+        self.show = False
         # self.memory = []
         with open(f"pong/memory1.pickle", "rb") as f:
             self.memory = pickle.load(f)
@@ -264,7 +264,7 @@ class Env():
     def get_moves(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 5 and np.random.rand() > 0.5:
+        if d < 0 and d >= 5 or np.random.rand() > 0.7:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
@@ -301,28 +301,19 @@ class Env():
             # model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(512, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(512, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.5))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
             model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=["accuracy"])
@@ -351,7 +342,7 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(20000):
+    # for i in range(10000):
     #     env.train_network()
     #     print(i)
     # env.save_model()
