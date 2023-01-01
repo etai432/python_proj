@@ -1,27 +1,15 @@
-import cv2
-  
-  
-# define a video capture object
-vid = cv2.VideoCapture(0)
-  
-while(True):
-      
-    # Capture the video frame
-    # by frame
-    ret, frame = vid.read()
-  
-    # Display the resulting frame
-    cv2.imshow('frame', frame)
-      
-    # the 'q' button is set as the
-    # quitting button you may use any
-    # desired button of your choice
-    if cv2.waitKey(1) & 0xFF == ord('a'):
-        print("wassoup")
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-  
-# After the loop release the cap object
-vid.release()
-# Destroy all the window
-cv2.destroyAllWindows()
+import copy
+
+def det3(list1):
+    save_list=copy.deepcopy(list1)
+    print(save_list)
+    for i in range(1,4):
+        print("original list: ", list1)
+        list1.pop(0) #changing list1
+        list1[i].pop(i)
+        list1[i-1].pop(i-1)
+        list1 = save_list[:] #resetting list1
+        print("copying back to list1: ", list1)
+
+n = [[2,4,2],[3,1,1],[1,2,0]]
+det3(n)

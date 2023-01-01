@@ -55,7 +55,7 @@ class Ball:
         self.radius = radius
     
     def copy(self):
-        return Ball(self.posx, self.posy, self.speed, self.max_speed, self.dx, self.dy, self.direction_x, self.radius, self.screen)
+        return Ball(self.posx, self.posy, self.speed, self.max_speed, self.dx, self.dy, self.direction_x, self.radius, self.screen, self.extra_x, self.extra_y)
     
     def reset(self):
         self.posx = self.starting_state[0]
@@ -115,7 +115,7 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 24
-        self.max_steps = 25000
+        self.max_steps = 2500
         self.model = self.make_model()
         # self.model = self.make_model('pong/pong_model.h5')
         self.show = False
@@ -140,7 +140,7 @@ class Env():
         self.paddle1 = Paddle(70, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, int(5 * 30 / self.fps), 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, int(5 * 30 / self.fps), 7, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -174,12 +174,14 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]]))[0])
-            # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy]]))[0])
-            self.paddle1.action(act)
-            self.paddle2.action(self.ai2())
-            memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy, self.ball.dx, self.ball.dy])
-            memory_y.append(self.get_target())
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            a = self.get_target()
+            self.paddle1.action(np.argmax(a))
+            # self.paddle2.action(self.ai2())
+            self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+            memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
+            memory_y.append(a)
             # print(self.get_target())
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -214,6 +216,7 @@ class Env():
         # y_train = np.concatenate([i[1] for i in batch])
         # self.model.fit(x_train, y_train, verbose=0, epochs=1)
         print("touched:", touch)
+        print("score: ", self.paddle1.score, "-", self.paddle2.score)
         if self.paddle1.score == 10:
             return 0
         return 2
@@ -237,24 +240,22 @@ class Env():
     def predict_hit_y(self):
         ball1 = self.ball.copy()
         if ball1.dx > 0:
-            return 1000
+            return 300
         else:
-            while ball1.posx > self.paddle1.posx:
+            while ball1.posx > self.paddle1.posx + self.paddle1.width:
                 ball1.update()
         return ball1.posy
 
     def get_target(self):
         end1 = self.predict_hit_y()
-        if end1 == 1000:
-            return [0, 1, 0]
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= -self.paddle1.length/2 + 4:
+        if d < 0 and d >= 15:
             return [0, 1, 0]
-        elif d > 0 and d <= self.paddle1.length/2 - 4:
+        elif d > 0 and d <= -15:
             return [0, 1, 0]
-        elif d > self.paddle1.length/2 + 4:
+        elif d > 15:
             return [1, 0, 0]
-        elif d < -self.paddle1.length/2 - 4:
+        elif d < -15:
             return [0, 0, 1]
         return [0, 1, 0]
     
@@ -270,11 +271,24 @@ class Env():
         if path == None:
             model = tf.keras.Sequential()
             model.add(tf.keras.layers.Input(shape=(5,)))
-            model.add(tf.keras.layers.Dense(1024,activation="relu"))
-            model.add(tf.keras.layers.Dense(512,activation="relu"))
-            model.add(tf.keras.layers.Dense(256,activation="relu"))
+            # model.add(tf.keras.layers.Dense(64, activation='relu'))
+            # model.add(tf.keras.layers.Dense(64, activation='relu'))
+            # model.add(tf.keras.layers.Dense(32, activation='relu'))
+            model.add(tf.keras.layers.Dense(256, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(256, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(128, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(128, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(64, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(64, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0000001), loss='categorical_crossentropy')
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -284,22 +298,25 @@ class Env():
         x = np.concatenate([i[0] for i in self.memory])
         y = np.concatenate([i[1] for i in self.memory])
         x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
-        x_train = np.array_split(x_train, 10)
-        y_train = np.array_split(y_train, 10)
-        for i in range(10):
-            self.model.fit(x_train[i], y_train[i])
-        self.model.evaluate(x_test, y_test)
+        x_train = np.array_split(x_train, 100)
+        y_train = np.array_split(y_train, 100)
+        for i in range(100):
+            print(i,"% complete")
+            self.model.fit(x_train[i], y_train[i], epochs=5, validation_split=0.1)
+        print(self.model.evaluate(x_test, y_test))
 
     def save_model(self):
         self.model.save("pong/pong_model.h5")
         with open(f"pong/memory.pickle", "wb") as f:
             pickle.dump(self.memory, f)
+        with open(f"pong/memory1.pickle", "wb") as f:
+            pickle.dump(self.memory, f)
         
 def main():
     env = Env()
-    # for i in range(1000):
+    # for i in range(20000):
     #     env.train_network()
-    #     print(i)F
+    #     print(i)
     # env.save_model()
     env.train_model()
     env.save_model()
