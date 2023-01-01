@@ -115,13 +115,13 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 24
-        self.max_steps = 2500
-        self.model = self.make_model()
-        # self.model = self.make_model('pong/pong_model.h5')
+        self.max_steps = 100000
+        # self.model = self.make_model()
+        self.model = self.make_model('pong/pong_model.h5')
         self.show = False
-        # self.memory = []
-        with open(f"pong/memory.pickle", "rb") as f:
-            self.memory = pickle.load(f)
+        self.memory = []
+        # with open(f"pong/memory.pickle", "rb") as f:
+        #     self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -174,12 +174,12 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             a = self.get_target()
-            self.paddle1.action(np.argmax(a))
-            # self.paddle2.action(self.ai2())
-            self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+            self.paddle1.action(act)
+            self.paddle2.action(self.ai2())
+            # self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
             memory_y.append(a)
             # print(self.get_target())
@@ -314,12 +314,12 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(20000):
-    #     env.train_network()
-    #     print(i)
+    for i in range(20000):
+        env.train_network()
+        print(i)
     # env.save_model()
-    env.train_model()
-    env.save_model()
+    # env.train_model()
+    # env.save_model()
     # env.train_network()
 
 
