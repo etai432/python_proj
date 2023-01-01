@@ -174,12 +174,12 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             a = self.get_target()
-            self.paddle1.action(act)
-            self.paddle2.action(self.ai2())
-            # self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+            self.paddle1.action(np.argmax(a))
+            # self.paddle2.action(self.ai2())
+            self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
             memory_y.append(a)
             # print(self.get_target())
@@ -249,13 +249,13 @@ class Env():
     def get_target(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 15:
+        if d < 0 and d >= 5:
             return [0, 1, 0]
-        elif d > 0 and d <= -15:
+        elif d > 0 and d <= -5:
             return [0, 1, 0]
-        elif d > 15:
+        elif d > 5:
             return [1, 0, 0]
-        elif d < -15:
+        elif d < -5:
             return [0, 0, 1]
         return [0, 1, 0]
     
