@@ -174,15 +174,15 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            a = self.get_target()
-            # self.paddle1.action(np.argmax(a))
-            self.paddle1.action(act)
+            a = self.get_moves()
+            self.paddle1.action(np.argmax(a))
+            # self.paddle1.action(act)
             # self.paddle2.action(self.ai2())
             self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
-            memory_y.append(a)
+            memory_y.append(self.get_target())
             # print(self.get_target())
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -251,7 +251,20 @@ class Env():
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
         if d < 0 and d >= 5:
-        # if d < 0 and d >= 5 and np.random.rand() > 0.5: #TODO: use for training from now on
+        # if d < 0 and d >= 5 and np.random.rand() > 0.5:
+            return [0, 1, 0]
+        elif d > 0 and d <= -5:
+            return [0, 1, 0]
+        elif d > 5:
+            return [1, 0, 0]
+        elif d < -5:
+            return [0, 0, 1]
+        return [0, 1, 0]
+    
+    def get_moves(self):
+        end1 = self.predict_hit_y()
+        d = self.paddle1.posy + self.paddle1.length/2 - end1
+        if d < 0 and d >= 5 and np.random.rand() > 0.5:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
