@@ -114,7 +114,7 @@ class Ball:
 class Env():
     def __init__(self):
         self.screen = (800, 600)
-        self.fps = 24
+        self.fps = 60
         self.max_steps = 100000
         # self.model = self.make_model()
         self.model = self.make_model('pong/pong_model.h5')
@@ -137,10 +137,10 @@ class Env():
         self.touch_score = 10
         self.miss_penalty = -10
         self.step_penalty = -0.1
-        self.paddle1 = Paddle(70, 5, 50, 265, 1, self.screen)
-        self.paddle2 = Paddle(70, 5, 750, 265, -1, self.screen)
+        self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
+        self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, int(5 * 30 / self.fps), 7, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, 5, 7, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -174,10 +174,11 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             a = self.get_target()
-            self.paddle1.action(np.argmax(a))
+            # self.paddle1.action(np.argmax(a))
+            self.paddle1.action(act)
             # self.paddle2.action(self.ai2())
             self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
@@ -250,6 +251,7 @@ class Env():
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
         if d < 0 and d >= 5:
+        # if d < 0 and d >= 5 and np.random.rand() > 0.5: #TODO: use for training from now on
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
