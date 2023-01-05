@@ -197,7 +197,7 @@ class Env():
                     self.ball.posx = self.paddle2.posx - self.ball.radius
             if self.show:
                 self.draw()
-                for event in pygame.event.get():   
+                for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
             if self.check_win() == 0:
@@ -208,14 +208,10 @@ class Env():
                 self.new_point()
             if self.show:
                 if 1/self.fps - time.time() + frame_time > 0:
-                    time.sleep(1/self.fps - time.time() + frame_time)
+                    # time.sleep(1/self.fps - time.time() + frame_time)
                     pass
         print("frames:", counter)
         self.memory.append((np.array(memory_x), np.array(memory_y)))
-        # batch = random.sample(self.memory, min(len(self.memory)//4 + 1, 32))
-        # x_train = np.concatenate([i[0] for i in batch])
-        # y_train = np.concatenate([i[1] for i in batch])
-        # self.model.fit(x_train, y_train, verbose=0, epochs=1)
         print("touched:", touch)
         print("score: ", self.paddle1.score, "-", self.paddle2.score)
         if self.paddle1.score == 10:
