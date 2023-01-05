@@ -114,14 +114,14 @@ class Ball:
 class Env():
     def __init__(self):
         self.screen = (800, 600)
-        self.fps = 60
-        self.max_steps = 2500
-        self.model = self.make_model()
-        # self.model = self.make_model('pong/pong_model.h5')
-        self.show = False
-        # self.memory = []
-        with open(f"pong/memory1.pickle", "rb") as f:
-            self.memory = pickle.load(f)
+        self.fps = 30
+        self.max_steps = 2500000
+        # self.model = self.make_model()
+        self.model = self.make_model('pong/pong_model.h5')
+        self.show = True
+        self.memory = []
+        # with open(f"pong/memory1.pickle", "rb") as f:
+        #     self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -306,6 +306,7 @@ class Env():
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(256, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(128, activation='relu'))
@@ -316,7 +317,7 @@ class Env():
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=["accuracy"])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -330,7 +331,8 @@ class Env():
         y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
-            self.model.fit(x_train[i], y_train[i], epochs=3, validation_split=0.1)
+            self.model.fit(x_train[i], y_train[i], epochs=5, validation_split=0.05)
+            self.model.save("pong/pong_model.h5")
         print(self.model.evaluate(x_test, y_test))
 
     def save_model(self):
@@ -342,13 +344,13 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(10000):
+    # for i in range(20000):
     #     env.train_network()
     #     print(i)
     # env.save_model()
-    env.train_model()
-    env.save_model()
-    # env.train_network()
+    # env.train_model()
+    # env.save_model()
+    env.train_network()
 
 
 if __name__ == "__main__":
