@@ -48,8 +48,8 @@ class Ball:
         self.max_speed = max_speed
         self.screen = screen
         self.direction_x = direction
-        self.dx = dx * self.speed
-        self.dy = dy * self.speed
+        self.dx = dx
+        self.dy = dy
         self.extra_x = extra_x
         self.extra_y = extra_y
         self.radius = radius
@@ -125,7 +125,7 @@ class Env():
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
-            self.game_screen = pygame.display.set_mode((800, 600))
+            self.game_screen = pygame.display.set_mode(self.screen)
             pygame.display.set_caption('pong')
             self.hm_episodes = 10
             self.show_every = 1
@@ -140,7 +140,7 @@ class Env():
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 7, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, 5, 8, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -177,7 +177,7 @@ class Env():
             # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            a = self.get_target()
+            a = self.get_moves()
             self.paddle1.action(np.argmax(a))
             # self.paddle1.action(act)
             # self.paddle2.action(act2)
@@ -241,7 +241,7 @@ class Env():
         if ball1.dx > 0:
             return 300
         else:
-            while ball1.posx > self.paddle1.posx + self.paddle1.width:
+            while ball1.posx > self.paddle1.posx + self.paddle1.width + self.ball.dx:
                 ball1.update()
         return ball1.posy
 
@@ -253,22 +253,34 @@ class Env():
         elif d > 0 and d <= -5:
             return [0, 1, 0]
         elif d > 5:
-            return [1, 0, 0]
+            if self.paddle1.posy < 5:
+                return [0, 1, 0]
+            else:
+                return [1, 0, 0]
         elif d < -5:
-            return [0, 0, 1]
+            if self.paddle1.posy + self.paddle1.length > 595:
+                return [0, 1, 0]
+            else:
+                return [0, 0, 1]
         return [0, 1, 0]
     
     def get_moves(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 5 or np.random.rand() > 0.7:
+        if d < 0 and d >= 5 or np.random.rand() > 0.8:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
         elif d > 5:
-            return [1, 0, 0]
+            if self.paddle1.posy < 5:
+                return [0, 1, 0]
+            else:
+                return [1, 0, 0]
         elif d < -5:
-            return [0, 0, 1]
+            if self.paddle1.posy + self.paddle1.length > 595:
+                return [0, 1, 0]
+            else:
+                return [0, 0, 1]
         return [0, 1, 0]
     
     def ai2(self):
