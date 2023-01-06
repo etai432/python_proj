@@ -6,7 +6,7 @@ import tensorflow as tf
 import pickle
 import random
 from sklearn.model_selection import train_test_split
-#TODO: make a big saved memory, train a game from there
+#TODO: fix the get_target function, retrain the model
 
 
 class Paddle:
@@ -174,15 +174,15 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            # a = self.get_moves()
-            # self.paddle1.action(np.argmax(a))
-            self.paddle1.action(act)
+            a = self.get_target()
+            self.paddle1.action(np.argmax(a))
+            # self.paddle1.action(act)
             # self.paddle2.action(act2)
-            self.paddle2.action(self.ai2())
-            # self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+            # self.paddle2.action(self.ai2())
+            self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
             memory_y.append(self.get_target())
             # print(self.get_target())
@@ -210,7 +210,7 @@ class Env():
                 self.new_point()
             if self.show:
                 if 1/self.fps - time.time() + frame_time > 0:
-                    # time.sleep(1/self.fps - time.time() + frame_time)
+                    time.sleep(1/self.fps - time.time() + frame_time)
                     pass
         print("frames:", counter)
         self.memory.append((np.array(memory_x), np.array(memory_y)))
@@ -249,7 +249,6 @@ class Env():
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
         if d < 0 and d >= 5:
-        # if d < 0 and d >= 5 and np.random.rand() > 0.5:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
