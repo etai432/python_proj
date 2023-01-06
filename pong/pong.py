@@ -115,13 +115,13 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 60
-        self.max_steps = 2500000
-        # self.model = self.make_model()
-        self.model = self.make_model('pong/pong_model.h5')
-        self.show = True
-        self.memory = []
-        # with open(f"pong/memory1.pickle", "rb") as f:
-        #     self.memory = pickle.load(f)
+        self.max_steps = 2500
+        self.model = self.make_model()
+        # self.model = self.make_model('pong/pong_model.h5')
+        self.show = False
+        # self.memory = []
+        with open(f"pong/memory1.pickle", "rb") as f:
+            self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -253,15 +253,9 @@ class Env():
         elif d > 0 and d <= -5:
             return [0, 1, 0]
         elif d > 5:
-            if self.paddle1.posy < 5:
-                return [0, 1, 0]
-            else:
-                return [1, 0, 0]
+            return [1, 0, 0]
         elif d < -5:
-            if self.paddle1.posy + self.paddle1.length > 595:
-                return [0, 1, 0]
-            else:
-                return [0, 0, 1]
+            return [0, 0, 1]
         return [0, 1, 0]
     
     def get_moves(self):
@@ -272,15 +266,9 @@ class Env():
         elif d > 0 and d <= -5:
             return [0, 1, 0]
         elif d > 5:
-            if self.paddle1.posy < 5:
-                return [0, 1, 0]
-            else:
-                return [1, 0, 0]
+            return [1, 0, 0]
         elif d < -5:
-            if self.paddle1.posy + self.paddle1.length > 595:
-                return [0, 1, 0]
-            else:
-                return [0, 0, 1]
+            return [0, 0, 1]
         return [0, 1, 0]
     
     def ai2(self):
@@ -313,7 +301,7 @@ class Env():
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=["accuracy"])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -340,13 +328,13 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(20000):
+    # for i in range(5000):
     #     env.train_network()
     #     print(i)
     # env.save_model()
-    # env.train_model()
-    # env.save_model()
-    env.train_network()
+    env.train_model()
+    env.save_model()
+    # env.train_network()
 
 
 if __name__ == "__main__":
