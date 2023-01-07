@@ -301,7 +301,7 @@ class Env():
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=["accuracy"])
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
             model = tf.keras.models.load_model(path)
