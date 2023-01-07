@@ -115,13 +115,13 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.fps = 60
-        self.max_steps = 2500
+        self.max_steps = 25000
         self.model = self.make_model()
         # self.model = self.make_model('pong/pong_model.h5')
         self.show = False
-        # self.memory = []
-        with open(f"pong/memory1.pickle", "rb") as f:
-            self.memory = pickle.load(f)
+        self.memory = []
+        # with open(f"pong/memory1.pickle", "rb") as f:
+        #     self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -177,7 +177,7 @@ class Env():
             # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            a = self.get_moves()
+            a = self.get_target()
             self.paddle1.action(np.argmax(a))
             # self.paddle1.action(act)
             # self.paddle2.action(act2)
@@ -315,7 +315,7 @@ class Env():
         y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
-            self.model.fit(x_train[i], y_train[i], epochs=5, validation_split=0.05)
+            self.model.fit(x_train[i], y_train[i], epochs=2, validation_split=0.05)
             self.model.save("pong/pong_model.h5")
         print(self.model.evaluate(x_test, y_test))
 
@@ -328,10 +328,10 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(5000):
-    #     env.train_network()
-    #     print(i)
-    # env.save_model()
+    for i in range(2000):
+        env.train_network()
+        print(i)
+    env.save_model()
     env.train_model()
     env.save_model()
     # env.train_network()
