@@ -174,6 +174,9 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
+            if counter % 3 == 0:
+                memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
+                memory_y.append(self.get_target())
             # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
@@ -183,8 +186,6 @@ class Env():
             # self.paddle2.action(act2)
             # self.paddle2.action(self.ai2())
             self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
-            memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
-            memory_y.append(self.get_target())
             # print(self.get_target())
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -282,17 +283,28 @@ class Env():
     def make_model(self, path=None):
         if path == None:
             model = tf.keras.Sequential()
+            # model.add(tf.keras.layers.Input(shape=(5,)))
+            # model.add(tf.keras.layers.Dense(512, activation='relu'))
+            # model.add(tf.keras.layers.Dense(512, activation='relu'))
+            # model.add(tf.keras.layers.Dense(256, activation='relu'))
+            # model.add(tf.keras.layers.Dense(256, activation='relu'))
+            # model.add(tf.keras.layers.Dense(128, activation='relu'))
+            # model.add(tf.keras.layers.Dense(128, activation='relu'))
+            # model.add(tf.keras.layers.Dense(64, activation='relu'))
+            # model.add(tf.keras.layers.Dense(64, activation='relu'))
+            # model.add(tf.keras.layers.Dense(32, activation='relu'))
+            # model.add(tf.keras.layers.Dense(3, activation="softmax"))
             model.add(tf.keras.layers.Input(shape=(5,)))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            # model.add(tf.keras.layers.Dense(256, activation='relu'))
-            # model.add(tf.keras.layers.Dense(256, activation='relu'))
-            # model.add(tf.keras.layers.Dense(128, activation='relu'))
-            # model.add(tf.keras.layers.Dense(128, activation='relu'))
+            model.add(tf.keras.layers.Dense(128, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dropout(0.2))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
-            model.add(tf.keras.layers.Dense(64, activation='relu'))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dropout(0.2))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
-            model.add(tf.keras.layers.Dense(3, activation="softmax"))
+            model.add(tf.keras.layers.BatchNormalization())
+            model.add(tf.keras.layers.Dropout(0.2))
+            model.add(tf.keras.layers.Dense(3, activation='softmax'))
             model.compile(optimizer="Adam", loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
