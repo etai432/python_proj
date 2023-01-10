@@ -6,8 +6,7 @@ import tensorflow as tf
 import pickle
 import random
 from sklearn.model_selection import train_test_split
-#TODO: fix the get_target function, retrain the model
-
+#TODO: normalize the data!!!
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
@@ -175,9 +174,9 @@ class Env():
                 pygame.display.flip()
             self.ball.update()
             if counter % 3 == 0:
-                memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
+                memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y])
                 memory_y.append(self.get_target())
-            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
             # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             a = self.get_target()
@@ -294,7 +293,7 @@ class Env():
             # model.add(tf.keras.layers.Dense(64, activation='relu'))
             # model.add(tf.keras.layers.Dense(32, activation='relu'))
             # model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.add(tf.keras.layers.Input(shape=(5,)))
+            model.add(tf.keras.layers.Input(shape=(7,)))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.BatchNormalization())
             model.add(tf.keras.layers.Dropout(0.2))
@@ -312,16 +311,16 @@ class Env():
             return model
     
     def train_model(self):
-        x_train = np.concatenate([i[0] for i in self.memory])
-        y_train = np.concatenate([i[1] for i in self.memory])
-        # x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
-        x_train = np.split(x_train, 100)
-        y_train = np.split(y_train, 100)
+        x = np.concatenate([i[0] for i in self.memory])
+        y = np.concatenate([i[1] for i in self.memory])
+        x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
+        x_train = np.array_split(x_train, 100)
+        y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
             self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.05)
             self.model.save("pong/pong_model.h5")
-        # print(self.model.evaluate(x_test, y_test))
+        print(self.model.evaluate(x_test, y_test))
 
     def save_model(self):
         self.model.save("pong/pong_model.h5")
@@ -332,7 +331,7 @@ class Env():
         
 def main():
     env = Env()
-    for i in range(500):
+    for i in range(10):
         env.train_network()
         print(i)
     env.save_model()
