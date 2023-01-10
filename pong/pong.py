@@ -119,9 +119,9 @@ class Env():
         self.model = self.make_model()
         # self.model = self.make_model('pong/pong_model.h5')
         self.show = False
-        # self.memory = []
-        with open(f"pong/memory1.pickle", "rb") as f:
-            self.memory = pickle.load(f)
+        self.memory = []
+        # with open(f"pong/memory1.pickle", "rb") as f:
+        #     self.memory = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -174,12 +174,12 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
             # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
-            print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            # a = self.get_moves()
-            # self.paddle1.action(np.argmax(a))
-            self.paddle1.action(act)
+            # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            a = self.get_target()
+            self.paddle1.action(np.argmax(a))
+            # self.paddle1.action(act)
             # self.paddle2.action(act2)
             # self.paddle2.action(self.ai2())
             self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
@@ -286,14 +286,14 @@ class Env():
             # model.add(tf.keras.layers.Dense(512, activation='relu'))
             # model.add(tf.keras.layers.Dense(512, activation='relu'))
             # model.add(tf.keras.layers.Dense(256, activation='relu'))
-            model.add(tf.keras.layers.Dense(256, activation='relu'))
-            model.add(tf.keras.layers.Dense(128, activation='relu'))
-            model.add(tf.keras.layers.Dense(128, activation='relu'))
+            # model.add(tf.keras.layers.Dense(256, activation='relu'))
+            # model.add(tf.keras.layers.Dense(128, activation='relu'))
+            # model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=["accuracy"])
+            model.compile(optimizer="Adam", loss='categorical_crossentropy', metrics=["accuracy"])
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -303,10 +303,10 @@ class Env():
         x_train = np.concatenate([i[0] for i in self.memory])
         y_train = np.concatenate([i[1] for i in self.memory])
         # x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
-        x_train = np.split(x_train, 1000)
-        y_train = np.split(y_train, 1000)
-        for i in range(1000):
-            print(i/10,"% complete")
+        x_train = np.split(x_train, 100)
+        y_train = np.split(y_train, 100)
+        for i in range(100):
+            print(i,"% complete")
             self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.05)
             self.model.save("pong/pong_model.h5")
         # print(self.model.evaluate(x_test, y_test))
@@ -320,10 +320,10 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(1000):
-    #     env.train_network()
-    #     print(i)
-    # env.save_model()
+    for i in range(500):
+        env.train_network()
+        print(i)
+    env.save_model()
     env.train_model()
     env.save_model()
     # env.train_network()
