@@ -6,7 +6,11 @@ import tensorflow as tf
 import pickle
 import random
 from sklearn.model_selection import train_test_split
-#TODO: normalize the data!!!
+from sklearn.preprocessing import MinMaxScaler
+#TODO: split visualation from environment
+#TODO: write a training function
+#TODO: write an ai vs ai function
+#TODO: write an ai vs player function
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
@@ -115,12 +119,19 @@ class Env():
         self.screen = (800, 600)
         self.fps = 60
         self.max_steps = 25000
-        self.model = self.make_model()
-        # self.model = self.make_model('pong/pong_model.h5')
-        self.show = False
-        self.memory = []
-        # with open(f"pong/memory1.pickle", "rb") as f:
-        #     self.memory = pickle.load(f)
+        test = True
+        if test:
+            self.model = self.make_model('pong/pong_model.h5')
+            self.show = True
+            self.memory = []
+        else:
+            self.model = self.make_model()
+            self.show = False
+            # self.memory = []
+            with open(f"pong/memory1.pickle", "rb") as f:
+                self.memory = pickle.load(f)
+        with open(f"pong/scaler.pickle", "rb") as f:
+            self.scaler = pickle.load(f)
         if self.show:
             pygame.init()
             self.background = (0, 0, 0)
@@ -173,19 +184,20 @@ class Env():
             if self.show:
                 pygame.display.flip()
             self.ball.update()
-            if counter % 3 == 0:
-                memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y])
-                memory_y.append(self.get_target())
-            # act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]]))[0])
-            # act2 = np.argmax(self.model.predict_on_batch(np.array([[self.screen[0] - self.ball.posx,self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy]]))[0])
-            # print(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
-            a = self.get_target()
-            self.paddle1.action(np.argmax(a))
-            # self.paddle1.action(act)
-            # self.paddle2.action(act2)
-            # self.paddle2.action(self.ai2())
-            self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
-            # print(self.get_target())
+            state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
+            if counter % 2 == 0:
+                if self.get_target() != [0, 1, 0] or np.random.rand() > 0.6:
+                    memory_x.append(state)
+                    memory_y.append(self.get_target())
+            norm_state = self.scaler.transform([state])
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle1.action(act)
+            # if np.random.rand() > 0.3:
+            #     self.paddle1.action(np.argmax(self.get_moves()))
+            # else:
+            #     self.paddle1.action(np.argmax(self.get_target()))
+            self.paddle2.action(self.ai2())
+            # self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
@@ -261,7 +273,7 @@ class Env():
     def get_moves(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 5 or np.random.rand() > 0.8:
+        if d < 0 and d >= 5 or np.random.rand() > 0.5:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
@@ -282,62 +294,65 @@ class Env():
     def make_model(self, path=None):
         if path == None:
             model = tf.keras.Sequential()
-            # model.add(tf.keras.layers.Input(shape=(5,)))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            # model.add(tf.keras.layers.Dense(256, activation='relu'))
-            # model.add(tf.keras.layers.Dense(256, activation='relu'))
-            # model.add(tf.keras.layers.Dense(128, activation='relu'))
-            # model.add(tf.keras.layers.Dense(128, activation='relu'))
-            # model.add(tf.keras.layers.Dense(64, activation='relu'))
-            # model.add(tf.keras.layers.Dense(64, activation='relu'))
-            # model.add(tf.keras.layers.Dense(32, activation='relu'))
-            # model.add(tf.keras.layers.Dense(3, activation="softmax"))
             model.add(tf.keras.layers.Input(shape=(7,)))
+            # model.add(tf.keras.layers.Dense(512, activation='relu'))
+            # model.add(tf.keras.layers.Dense(512, activation='relu'))
+            model.add(tf.keras.layers.Dense(256, activation='relu'))
+            model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.2))
+            model.add(tf.keras.layers.Dense(128, activation='relu'))
             model.add(tf.keras.layers.Dense(64, activation='relu'))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.2))
+            model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
-            model.add(tf.keras.layers.BatchNormalization())
-            model.add(tf.keras.layers.Dropout(0.2))
-            model.add(tf.keras.layers.Dense(3, activation='softmax'))
-            model.compile(optimizer="Adam", loss='categorical_crossentropy', metrics=["accuracy"])
+            model.add(tf.keras.layers.Dense(3, activation="softmax"))
+            # model.add(tf.keras.layers.Input(shape=(7,)))
+            # model.add(tf.keras.layers.Dense(128, activation='relu'))
+            # model.add(tf.keras.layers.BatchNormalization())
+            # model.add(tf.keras.layers.Dropout(0.2))
+            # model.add(tf.keras.layers.Dense(64, activation='relu'))
+            # model.add(tf.keras.layers.BatchNormalization())
+            # model.add(tf.keras.layers.Dropout(0.2))
+            # model.add(tf.keras.layers.Dense(32, activation='relu'))
+            # model.add(tf.keras.layers.BatchNormalization())
+            # model.add(tf.keras.layers.Dropout(0.2))
+            # model.add(tf.keras.layers.Dense(3, activation='softmax'))
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy')
             return model
         else:
             model = tf.keras.models.load_model(path)
             return model
     
     def train_model(self):
+        scaler = MinMaxScaler()
         x = np.concatenate([i[0] for i in self.memory])
         y = np.concatenate([i[1] for i in self.memory])
-        x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.05)
+        x = scaler.fit_transform(x)
+        x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.1)
         x_train = np.array_split(x_train, 100)
         y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
-            self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.05)
+            self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.1)
             self.model.save("pong/pong_model.h5")
         print(self.model.evaluate(x_test, y_test))
+        with open(f"pong/scaler.pickle", "wb") as f:
+            pickle.dump(scaler, f)
+
 
     def save_model(self):
         self.model.save("pong/pong_model.h5")
-        # with open(f"pong/memory.pickle", "wb") as f:
-        #     pickle.dump(self.memory, f)
         with open(f"pong/memory1.pickle", "wb") as f:
             pickle.dump(self.memory, f)
         
 def main():
     env = Env()
-    for i in range(10):
-        env.train_network()
-        print(i)
-    env.save_model()
-    env.train_model()
-    env.save_model()
-    # env.train_network()
+    # for i in range(1000):
+    #     env.train_network()
+    #     print(i)
+    # env.save_model()
+    # env.train_model()
+    # env.save_model()
+    env.train_network()
 
 
 if __name__ == "__main__":
