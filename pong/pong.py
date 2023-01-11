@@ -138,13 +138,6 @@ class Env():
             self.background = (0, 0, 0)
             self.game_screen = pygame.display.set_mode(self.screen)
             pygame.display.set_caption('pong')
-            self.hm_episodes = 10
-            self.show_every = 1
-            self.epsilon = 0
-        else:
-            self.hm_episodes = 1000
-            self.show_every = 10000
-            self.epsilon = 1
         self.touch_score = 10
         self.miss_penalty = -10
         self.step_penalty = -0.1
@@ -182,8 +175,6 @@ class Env():
         while self.paddle1.score < 10 and self.paddle2.score < 10 and running and counter < self.max_steps:
             frame_time = time.time()
             counter += 1
-            if self.show:
-                pygame.display.flip()
             self.ball.update()
             state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
             if counter % 2 == 0:
@@ -210,11 +201,6 @@ class Env():
                     self.ball.change_speed()
                     self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
                     self.ball.posx = self.paddle2.posx - self.ball.radius
-            if self.show:
-                self.draw()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
             if self.check_win() == 0:
                 self.paddle2.score += 1
                 self.new_point()
@@ -222,6 +208,11 @@ class Env():
                 self.paddle1.score += 1
                 self.new_point()
             if self.show:
+                self.draw()
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
                 if 1/self.fps - time.time() + frame_time > 0:
                     time.sleep(1/self.fps - time.time() + frame_time)
                     pass
