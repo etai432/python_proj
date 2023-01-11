@@ -11,6 +11,7 @@ from sklearn.preprocessing import MinMaxScaler
 #TODO: write a training function
 #TODO: write an ai vs ai function
 #TODO: write an ai vs player function
+#TODO: if NN bad against player, make the training agent hit better
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
