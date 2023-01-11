@@ -120,7 +120,7 @@ class Env():
         self.screen = (800, 600)
         self.fps = 60
         self.max_steps = 25000
-        test = True
+        test = False
         if test:
             self.model = self.make_model('pong/pong_model.h5')
             self.show = True
@@ -190,15 +190,15 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.6:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
-            norm_state = self.scaler.transform([state])
-            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            self.paddle1.action(act)
-            # if np.random.rand() > 0.3:
-            #     self.paddle1.action(np.argmax(self.get_moves()))
-            # else:
-            #     self.paddle1.action(np.argmax(self.get_target()))
-            self.paddle2.action(self.ai2())
-            # self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+            # norm_state = self.scaler.transform([state])
+            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            # self.paddle1.action(act)
+            if np.random.rand() > 0.3:
+                self.paddle1.action(np.argmax(self.get_moves()))
+            else:
+                self.paddle1.action(np.argmax(self.get_target()))
+            # self.paddle2.action(self.ai2())
+            self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
@@ -232,6 +232,15 @@ class Env():
         if self.paddle1.score == 10:
             return 0
         return 2
+    
+    def teleport2(self):
+        if np.random.rand() > 0.3:
+                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
+        else:
+            if np.random.rand() > 0.5:
+                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(self.paddle2.length/2 - 15, self.paddle2.length/2)
+            else:
+                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 15)
 
     def draw(self):
         self.game_screen.fill(self.background)
@@ -347,13 +356,13 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(1000):
-    #     env.train_network()
-    #     print(i)
-    # env.save_model()
-    # env.train_model()
-    # env.save_model()
-    env.train_network()
+    for i in range(1000):
+        env.train_network()
+        print(i)
+    env.save_model()
+    env.train_model()
+    env.save_model()
+    # env.train_network()
 
 
 if __name__ == "__main__":
