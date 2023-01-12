@@ -120,9 +120,9 @@ class Env():
         self.screen = (800, 600)
         self.fps = 60
         self.max_steps = 25000
-        test = False
+        test = True
         if test:
-            self.model = self.make_model('pong/pong_model.h5')
+            self.model = self.make_model('pong/pong_model_v2.h5')
             self.show = True
             self.memory = []
         else:
@@ -141,7 +141,7 @@ class Env():
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 13, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -310,7 +310,7 @@ class Env():
     def get_moves(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 5 or np.random.rand() > 0.75:
+        if d < 0 and d >= 5 or np.random.rand() > 0.7:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
@@ -333,7 +333,7 @@ class Env():
             model = tf.keras.Sequential()
             model.add(tf.keras.layers.Input(shape=(5,)))
             # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            model.add(tf.keras.layers.Dense(512, activation='relu'))
+            # model.add(tf.keras.layers.Dense(512, activation='relu'))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
@@ -384,14 +384,14 @@ class Env():
         
 def main():
     env = Env()
-    for i in range(2000):
-        env.train_network()
-        print(i)
-    env.save_model()
-    env.train_model()
-    env.save_model()
+    # for i in range(1000):
+    #     env.train_network()
+    #     print(i)
+    # env.save_model()
+    # env.train_model()
+    # env.save_model()
     # env.train_network()
-    # env.network_vs_player()
+    env.network_vs_player()
 
 
 if __name__ == "__main__":
