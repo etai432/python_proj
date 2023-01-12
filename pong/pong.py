@@ -229,6 +229,48 @@ class Env():
                 self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(self.paddle2.length/2 - 15, self.paddle2.length/2)
             else:
                 self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 15)
+    
+    def network_vs_player(self):
+        self.new_game()
+        running = True
+        while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
+            frame_time = time.time()
+            self.ball.update()
+            state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
+            norm_state = self.scaler.transform([state])
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle1.action(act)
+            if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
+                    self.ball.posx = self.paddle1.posx + self.paddle1.width
+            if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
+                    self.ball.posx = self.paddle2.posx - self.ball.radius
+            if self.check_win() == 0:
+                self.paddle2.score += 1
+                self.new_point()
+            elif self.check_win() == 2:
+                self.paddle1.score += 1
+                self.new_point()
+            self.draw()
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            keys = pygame.key.get_pressed() 
+            if keys[pygame.K_DOWN]:
+                self.paddle2.action(2)
+            if keys[pygame.K_UP]:
+                self.paddle2.action(0)
+            if 1/self.fps - time.time() + frame_time > 0.001:
+                time.sleep(1/self.fps - time.time() + frame_time)
+        if self.paddle1.score == 10:
+            return 0
+        return 2
 
     def draw(self):
         self.game_screen.fill(self.background)
@@ -351,7 +393,8 @@ def main():
     # env.save_model()
     # env.train_model()
     # env.save_model()
-    env.train_network()
+    # env.train_network()
+    env.network_vs_player()
 
 
 if __name__ == "__main__":
