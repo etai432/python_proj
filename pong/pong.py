@@ -138,9 +138,6 @@ class Env():
             self.background = (0, 0, 0)
             self.game_screen = pygame.display.set_mode(self.screen)
             pygame.display.set_caption('pong')
-        self.touch_score = 10
-        self.miss_penalty = -10
-        self.step_penalty = -0.1
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
