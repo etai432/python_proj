@@ -7,12 +7,10 @@ import pickle
 import random
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-#TODO: split visualation from environment
-#TODO: add a winning screen
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
-        self.starting_state = (posx, posy)
+        self.starting_state = posx
         self.length = length
         self.width = width
         self.posx = posx
@@ -23,8 +21,7 @@ class Paddle:
         self.rect = pygame.Rect(self.posx, self.posy, self.width, self.length)
     
     def reset(self):
-        self.posx = self.starting_state[0]
-        self.posy = self.starting_state[1]
+        self.posx = self.starting_state
     
     def action(self, action):
         if action == 0:
@@ -115,26 +112,14 @@ class Ball:
 class Env():
     def __init__(self):
         self.screen = (800, 600)
-        self.fps = 60
         self.max_steps = 25000
-        test = True
-        if test:
-            self.model = self.make_model('pong/pong_model.h5')
-            self.show = True
-            self.memory = []
-        else:
-            self.model = self.make_model()
-            self.show = False
-            self.memory = []
-            # with open(f"pong/memory1.pickle", "rb") as f:
-            #     self.memory = pickle.load(f)
+        self.model = self.make_model('pong/pong_model.h5')
+        # self.model = self.make_model()
+        self.memory = []
+        # with open(f"pong/memory1.pickle", "rb") as f:
+        #     self.memory = pickle.load(f)
         with open(f"pong/scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
-        if self.show:
-            pygame.init()
-            self.background = (0, 0, 0)
-            self.game_screen = pygame.display.set_mode(self.screen)
-            pygame.display.set_caption('pong')
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
@@ -151,23 +136,62 @@ class Env():
         self.ball.reset()
         self.paddle1.reset()
         self.paddle2.reset()
-        if self.show:
-            self.draw()
     
     def new_game(self):
         self.new_point()
         self.paddle1.score = 0
         self.paddle2.score = 0
 
-    def train_network(self):
+    def reinforcement_learning(self):
         memory_x = []
         memory_y = []
         self.new_game()
         counter = 0
         touch = 0
-        running = True
-        while self.paddle1.score < 10 and self.paddle2.score < 10 and running and counter < self.max_steps:
-            frame_time = time.time()
+        while self.paddle1.score < 10 and self.paddle2.score < 10 and counter < self.max_steps:
+            counter += 1
+            self.ball.update()
+            act = np.argmax(self.model.predict_on_batch(np.array([[self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy]]))[0])
+            self.paddle1.action(act)
+            self.teleport2()
+            memory_x.append([self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy])
+            memory_y.append(self.get_target())
+            if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
+                    self.ball.posx = self.paddle1.posx + self.paddle1.width
+                    touch += 1
+            if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
+                if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                    self.ball.change_speed()
+                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
+                    self.ball.posx = self.paddle2.posx - self.ball.radius
+            if self.check_win() == 0:
+                self.paddle2.score += 1
+                self.new_point()
+            elif self.check_win() == 2:
+                self.paddle1.score += 1
+                self.new_point()
+        print("frames:", counter)
+        self.memory.append((np.array(memory_x), np.array(memory_y)))
+        batch = random.sample(self.memory, min(len(self.memory), 32))
+        x_train = np.concatenate([i[0] for i in batch])
+        y_train = np.concatenate([i[1] for i in batch])
+        self.model.fit(x_train, y_train, verbose=0, epochs=1)
+        print("touched:", touch)
+        print("score: ", self.paddle1.score, "-", self.paddle2.score)
+        if self.paddle1.score == 10:
+            return 0
+        return 2
+
+    def collect_data(self):
+        memory_x = []
+        memory_y = []
+        self.new_game()
+        counter = 0
+        touch = 0
+        while self.paddle1.score < 10 and self.paddle2.score < 10 and counter < self.max_steps:
             counter += 1
             self.ball.update()
             state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
@@ -175,11 +199,7 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.8:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
-            # norm_state = self.scaler.transform([state])
-            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            # self.paddle1.action(act)
             self.paddle1.action(np.argmax(self.get_moves()))
-            # self.paddle2.action(self.ai2())
             self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -198,15 +218,6 @@ class Env():
             elif self.check_win() == 2:
                 self.paddle1.score += 1
                 self.new_point()
-            if self.show:
-                self.draw()
-                pygame.display.flip()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                if 1/self.fps - time.time() + frame_time > 0:
-                    time.sleep(1/self.fps - time.time() + frame_time)
-                    pass
         print("frames:", counter)
         self.memory.append((np.array(memory_x), np.array(memory_y)))
         print("touched:", touch)
@@ -224,64 +235,28 @@ class Env():
             else:
                 self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 15)
     
-    def network_vs_player(self):
-        self.new_game()
-        running = True
-        while self.paddle1.score < 10 and self.paddle2.score < 10 and running:
-            frame_time = time.time()
-            self.ball.update()
-            state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
-            norm_state = self.scaler.transform([state])
-            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            self.paddle1.action(act)
-            # self.paddle1.action(np.argmax(self.get_target()))
-            if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
-                if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
-                    self.ball.change_speed()
-                    self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
-                    self.ball.posx = self.paddle1.posx + self.paddle1.width
-            if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
-                if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
-                    self.ball.change_speed()
-                    self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
-                    self.ball.posx = self.paddle2.posx - self.ball.radius
-            if self.check_win() == 0:
-                self.paddle2.score += 1
-                self.new_point()
-            elif self.check_win() == 2:
-                self.paddle1.score += 1
-                self.new_point()
-            self.draw()
-            pygame.display.flip()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            keys = pygame.key.get_pressed() 
-            if keys[pygame.K_DOWN]:
-                self.paddle2.action(2)
-            if keys[pygame.K_UP]:
-                self.paddle2.action(0)
-            if 1/self.fps - time.time() + frame_time > 0.001:
-                time.sleep(1/self.fps - time.time() + frame_time)
-        if self.paddle1.score == 10:
-            return 0
-        return 2
-
-    def draw(self):
-        self.game_screen.fill(self.background)
-        pygame.draw.line(self.game_screen, (100, 100, 100), (self.screen[0] // 2, 0), (self.screen[0] // 2, self.screen[1]), 2)
-        self.display((310, 20), self.paddle1.score)
-        self.display((460, 20), self.paddle2.score)
-        self.paddle1.update_rect()
-        self.paddle2.update_rect()
-        pygame.draw.rect(self.game_screen, (255, 255, 255), self.paddle1.rect)
-        pygame.draw.rect(self.game_screen, (255, 255, 255), self.paddle2.rect)
-        pygame.draw.circle(self.game_screen, (255, 255, 255), (self.ball.posx, self.ball.posy), self.ball.radius)
-
-    def display(self, position, text, color=(255, 255, 255)):
-        font = pygame.font.SysFont("Arial", 50, 50)
-        text = font.render(str(text), True, color)
-        self.game_screen.blit(text, position)
+    def update_env(self):
+        self.ball.update()
+        state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
+        norm_state = self.scaler.transform([state])
+        act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+        self.paddle1.action(act)
+        if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
+            if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                self.ball.change_speed()
+                self.ball.hit_paddle(self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)
+                self.ball.posx = self.paddle1.posx + self.paddle1.width
+        if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
+            if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                self.ball.change_speed()
+                self.ball.hit_paddle(self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)
+                self.ball.posx = self.paddle2.posx - self.ball.radius
+        if self.check_win() == 0:
+            self.paddle2.score += 1
+            self.new_point()
+        elif self.check_win() == 2:
+            self.paddle1.score += 1
+            self.new_point()
 
     def predict_hit_y(self):
         ball1 = self.ball.copy()
@@ -330,8 +305,6 @@ class Env():
         if path == None:
             model = tf.keras.Sequential()
             model.add(tf.keras.layers.Input(shape=(7,)))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
-            # model.add(tf.keras.layers.Dense(512, activation='relu'))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.Dense(256, activation='relu'))
             model.add(tf.keras.layers.Dense(128, activation='relu'))
@@ -371,14 +344,14 @@ class Env():
         
 def main():
     env = Env()
-    # for i in range(1000):
-    #     env.train_network()
-    #     print(i)
-    # env.save_model()
-    # env.train_model()
-    # env.save_model()
+    for i in range(1000):
+        env.collect_data()
+        print(i)
+    env.save_model()
+    env.train_model()
+    env.save_model()
     # env.train_network()
-    env.network_vs_player()
+    # env.network_vs_player()
 
 
 if __name__ == "__main__":
