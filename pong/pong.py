@@ -8,10 +8,7 @@ import random
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 #TODO: split visualation from environment
-#TODO: write a training function
-#TODO: write an ai vs ai function
-#TODO: write an ai vs player function
-#TODO: if NN bad against player, make the training opponent hit better
+#TODO: add a winning screen
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
@@ -178,10 +175,10 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.8:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
-            norm_state = self.scaler.transform([state])
-            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            self.paddle1.action(act)
-            # self.paddle1.action(np.argmax(self.get_moves()))
+            # norm_state = self.scaler.transform([state])
+            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            # self.paddle1.action(act)
+            self.paddle1.action(np.argmax(self.get_moves()))
             # self.paddle2.action(self.ai2())
             self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
@@ -237,6 +234,7 @@ class Env():
             norm_state = self.scaler.transform([state])
             act = np.argmax(self.model.predict_on_batch(norm_state)[0])
             self.paddle1.action(act)
+            # self.paddle1.action(np.argmax(self.get_target()))
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                     self.ball.change_speed()
