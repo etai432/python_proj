@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 class Paddle:
     def __init__(self, length, width, posx, posy, direction, screen):
-        self.starting_state = posx
+        self.start_y = posy
         self.length = length
         self.width = width
         self.posx = posx
@@ -21,7 +21,7 @@ class Paddle:
         self.rect = pygame.Rect(self.posx, self.posy, self.width, self.length)
     
     def reset(self):
-        self.posx = self.starting_state
+        self.posy = self.start_y
     
     def action(self, action):
         if action == 0:

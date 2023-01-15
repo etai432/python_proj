@@ -10,7 +10,7 @@ def network_vs_player():
     pygame.display.set_caption('pong')
     env.new_game()
     running = True
-    while env.paddle1.score < 1 and env.paddle2.score < 1 and running:
+    while env.paddle1.score < 10 and env.paddle2.score < 10 and running:
         frame_time = time.time()
         draw(env, game_screen)
         env.update_env()
@@ -26,10 +26,12 @@ def network_vs_player():
         if 1/fps - time.time() + frame_time > 0.001:
             time.sleep(1/fps - time.time() + frame_time)
     if env.paddle1.score == 10:
+        draw(env, game_screen)
         winning_screen(game_screen, 0)
         pygame.display.flip()
         time.sleep(3)
         return 0
+    draw(env, game_screen)
     winning_screen(game_screen, 2)
     pygame.display.flip()
     time.sleep(3)
