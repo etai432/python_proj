@@ -23,6 +23,10 @@ def network_vs_player():
             env.paddle2.action(2)
         if keys[pygame.K_UP]:
             env.paddle2.action(0)
+        # if keys[pygame.K_RIGHT]:
+        #     env.paddle2.posx += 3
+        # if keys[pygame.K_LEFT]:
+        #     env.paddle2.posx -= 3
         if 1/fps - time.time() + frame_time > 0.001:
             time.sleep(1/fps - time.time() + frame_time)
     if env.paddle1.score == 10:
