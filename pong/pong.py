@@ -113,11 +113,11 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.max_steps = 25000
-        self.model = self.make_model('pong/pong_model.h5')
-        # self.model = self.make_model()
-        # self.memory = []
-        with open(f"pong/memory1.pickle", "rb") as f:
-            self.memory = pickle.load(f)
+        # self.model = self.make_model('pong/pong_model.h5')
+        self.model = self.make_model()
+        self.memory = []
+        # with open(f"pong/memory1.pickle", "rb") as f:
+            # self.memory = pickle.load(f)
         with open(f"pong/scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
@@ -351,8 +351,8 @@ def main():
         env.collect_data()
         print(i)
     env.save_model()
-    env.train_model()
-    env.save_model()
+    # env.train_model()
+    # env.save_model()
     # env.train_network()
     # env.network_vs_player()
 
