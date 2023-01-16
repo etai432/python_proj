@@ -113,11 +113,11 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.max_steps = 25000
-        # self.model = self.make_model('pong/pong_model.h5')
-        self.model = self.make_model()
+        self.model = self.make_model('pong/pong_model.h5')
+        # self.model = self.make_model()
         self.memory = []
         # with open(f"pong/memory1.pickle", "rb") as f:
-            # self.memory = pickle.load(f)
+        #     self.memory = pickle.load(f)
         with open(f"pong/scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
@@ -199,10 +199,10 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.8:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
-            # norm_state = self.scaler.transform([state])
-            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            # self.paddle1.action(act)
-            self.paddle1.action(np.argmax(self.get_moves()))
+            norm_state = self.scaler.transform([state])
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle1.action(act)
+            # self.paddle1.action(np.argmax(self.get_moves()))
             self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -316,7 +316,7 @@ class Env():
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy')
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy')
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -333,12 +333,11 @@ class Env():
         y_train = np.array_split(y_train, 100)
         for i in range(100):
             print(i,"% complete")
-            self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.1)
+            self.model.fit(x_train[i], y_train[i], epochs=2, validation_split=0.05)
             self.model.save("pong/pong_model1.h5")
         print(self.model.evaluate(x_test, y_test))
         with open(f"pong/scaler1.pickle", "wb") as f:
             pickle.dump(scaler, f)
-
 
     def save_model(self):
         self.model.save("pong/pong_model1.h5")
@@ -347,11 +346,11 @@ class Env():
         
 def main():
     env = Env()
-    for i in range(1000):
+    for i in range(300):
         env.collect_data()
         print(i)
     env.save_model()
-    # env.train_model()
+    env.train_model()
     # env.save_model()
     # env.train_network()
     # env.network_vs_player()
