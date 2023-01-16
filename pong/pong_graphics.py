@@ -27,21 +27,23 @@ def network_vs_player():
             time.sleep(1/fps - time.time() + frame_time)
     if env.paddle1.score == 10:
         draw(env, game_screen)
-        winning_screen(game_screen, 0)
+        winning_screen(game_screen, env)
         pygame.display.flip()
         time.sleep(3)
         return 0
     draw(env, game_screen)
-    winning_screen(game_screen, 2)
+    winning_screen(game_screen, env)
     pygame.display.flip()
     time.sleep(3)
     return 2
 
-def winning_screen(game_screen, winner):
-    if winner == 0:
-        display(game_screen, (300, 200), "ai won!")
-    if winner == 2:
-        display(game_screen, (300, 250), "player won!")
+def winning_screen(game_screen, env):
+    if env.paddle1.score > env.paddle2.score:
+        display(game_screen, (300, 200), "Ai won!") # arik wanted a capital A
+    elif env.paddle1.score < env.paddle2.score:
+        display(game_screen, (300, 250), "Player won!")
+    else:
+        display(game_screen, (300, 250), "Its a tie!")
 
 def draw(env, game_screen):
     game_screen.fill((0, 0, 0))
