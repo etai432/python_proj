@@ -117,13 +117,13 @@ class Env():
         # self.model = self.make_model()
         self.memory = []
         # with open(f"pong/memory1.pickle", "rb") as f:
-        #     self.memory = pickle.load(f)
+            # self.memory = pickle.load(f)
         with open(f"pong/scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
         num1 = np.random.randint(0, 2)
-        self.ball = Ball(400, 300, 5, 8, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
+        self.ball = Ball(400, 300, 5, 10, num1 * 2 - 1, 0, num1 * 2 - 1, 3, self.screen)
 
     def check_win(self):
         if self.ball.posx == 0:
@@ -199,10 +199,10 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.8:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
-            norm_state = self.scaler.transform([state])
-            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-            self.paddle1.action(act)
-            # self.paddle1.action(np.argmax(self.get_moves()))
+            # norm_state = self.scaler.transform([state])
+            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            # self.paddle1.action(act)
+            self.paddle1.action(np.argmax(self.get_moves()))
             self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
                 if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
@@ -286,7 +286,7 @@ class Env():
     def get_moves(self):
         end1 = self.predict_hit_y()
         d = self.paddle1.posy + self.paddle1.length/2 - end1
-        if d < 0 and d >= 5 or np.random.rand() > 0.5:
+        if d < 0 and d >= 5 or np.random.rand() > 0.65:
             return [0, 1, 0]
         elif d > 0 and d <= -5:
             return [0, 1, 0]
@@ -316,7 +316,7 @@ class Env():
             model.add(tf.keras.layers.Dense(64, activation='relu'))
             model.add(tf.keras.layers.Dense(32, activation='relu'))
             model.add(tf.keras.layers.Dense(3, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='categorical_crossentropy')
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss='categorical_crossentropy')
             return model
         else:
             model = tf.keras.models.load_model(path)
@@ -326,7 +326,6 @@ class Env():
         scaler = MinMaxScaler()
         x = np.concatenate([i[0] for i in self.memory])
         y = np.concatenate([i[1] for i in self.memory])
-        print(len(y))
         x = scaler.fit_transform(x)
         x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.1)
         x_train = np.array_split(x_train, 100)
@@ -341,7 +340,7 @@ class Env():
 
     def save_model(self):
         self.model.save("pong/pong_model1.h5")
-        with open(f"pong/memory1.pickle", "wb") as f:
+        with open(f"pong/memory2.pickle", "wb") as f:
             pickle.dump(self.memory, f)
         
 def main():
