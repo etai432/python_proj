@@ -115,9 +115,9 @@ class Env():
         self.max_steps = 25000
         self.model = self.make_model('pong/pong_model.h5')
         # self.model = self.make_model()
-        self.memory = []
-        # with open(f"pong/memory1.pickle", "rb") as f:
-        #     self.memory = pickle.load(f)
+        # self.memory = []
+        with open(f"pong/memory1.pickle", "rb") as f:
+            self.memory = pickle.load(f)
         with open(f"pong/scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
@@ -199,6 +199,9 @@ class Env():
                 if self.get_target() != [0, 1, 0] or np.random.rand() > 0.8:
                     memory_x.append(state)
                     memory_y.append(self.get_target())
+            # norm_state = self.scaler.transform([state])
+            # act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            # self.paddle1.action(act)
             self.paddle1.action(np.argmax(self.get_moves()))
             self.teleport2()
             if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
@@ -231,9 +234,9 @@ class Env():
                 self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, self.paddle2.length/2)
         else:
             if np.random.rand() > 0.5:
-                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(self.paddle2.length/2 - 15, self.paddle2.length/2)
+                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(self.paddle2.length/2 - 10, self.paddle2.length/2)
             else:
-                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 15)
+                self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 10)
     
     def update_env(self):
         self.ball.update()
@@ -331,14 +334,14 @@ class Env():
         for i in range(100):
             print(i,"% complete")
             self.model.fit(x_train[i], y_train[i], epochs=1, validation_split=0.1)
-            self.model.save("pong/pong_model.h5")
+            self.model.save("pong/pong_model1.h5")
         print(self.model.evaluate(x_test, y_test))
-        with open(f"pong/scaler.pickle", "wb") as f:
+        with open(f"pong/scaler1.pickle", "wb") as f:
             pickle.dump(scaler, f)
 
 
     def save_model(self):
-        self.model.save("pong/pong_model.h5")
+        self.model.save("pong/pong_model1.h5")
         with open(f"pong/memory1.pickle", "wb") as f:
             pickle.dump(self.memory, f)
         
