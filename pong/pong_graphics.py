@@ -107,9 +107,9 @@ def draw(env, game_screen):
     pygame.draw.circle(game_screen, (255, 255, 255), (env.ball.posx, env.ball.posy), env.ball.radius)
 
 def display(game_screen, position, text, color=(255, 255, 255)):
-        font = pygame.font.SysFont("Arial", 50, 50)
-        text = font.render(str(text), True, color)
-        game_screen.blit(text, position)
+    font = pygame.font.SysFont("Arial", 50, 50)
+    text = font.render(str(text), True, color)
+    game_screen.blit(text, position)
 
 if __name__=="__main__":
     menu()
