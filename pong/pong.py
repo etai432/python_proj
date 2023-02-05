@@ -239,12 +239,20 @@ class Env():
             else:
                 self.paddle2.posy = self.ball.posy - self.paddle2.length/2 + np.random.randint(-self.paddle2.length/2, -self.paddle2.length/2 + 10)
     
-    def update_env(self):
+    def update_env(self, game_type):
         self.ball.update()
         state = [self.ball.posx, self.ball.posy, self.paddle1.posy + self.paddle1.length/2, self.ball.dx, self.ball.dy, self.ball.extra_x, self.ball.extra_y]
         norm_state = self.scaler.transform([state])
-        act = np.argmax(self.model.predict_on_batch(norm_state)[0])
-        self.paddle1.action(act)
+        if game_type == 1:
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle1.action(act)
+        elif game_type == 3:
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle1.action(act)
+            state = [self.screen[0] - self.ball.posx, self.ball.posy, self.paddle2.posy + self.paddle2.length/2, -self.ball.dx, self.ball.dy, -self.ball.extra_x, self.ball.extra_y]
+            norm_state = self.scaler.transform([state])
+            act = np.argmax(self.model.predict_on_batch(norm_state)[0])
+            self.paddle2.action(act)
         if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
             if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
                 self.ball.change_speed()
