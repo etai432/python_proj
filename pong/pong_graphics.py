@@ -16,6 +16,8 @@ def game(game_screen, game_type=1):#1. network vs player, 2. player vs player, 3
             if event.type == pygame.QUIT:
                 running = False
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            running = False
         if game_type != 3:
             if keys[pygame.K_DOWN]:
                 env.paddle2.action(2)
@@ -46,6 +48,9 @@ def restart_button(game_screen, game_type):
     running = True
     while running:
         for event in pygame.event.get():
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_ESCAPE]:
+                running = False
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -73,6 +78,9 @@ def menu():
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                running = False
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_ESCAPE]:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse = pygame.mouse.get_pos()
