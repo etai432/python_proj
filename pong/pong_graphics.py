@@ -46,6 +46,7 @@ def restart_button(game_screen, game_type):
     display(game_screen, (490, 415), "menu", color=(0, 255, 0))
     pygame.display.flip()
     running = True
+    time.sleep(0.2)
     while running:
         for event in pygame.event.get():
             keys = pygame.key.get_pressed()
@@ -74,6 +75,7 @@ def menu():
     pygame.draw.rect(game_screen, (150, 150, 150), pygame.Rect(200, 420, 400, 100))
     display(game_screen, (210, 435), "ai vs ai", color=(0, 255, 0))
     pygame.display.flip()
+    time.sleep(0.2)
     running = True
     while running:
         for event in pygame.event.get():
