@@ -28,7 +28,7 @@ class Cell(Button):
 
 
 class RestartButton(Button):
-    def __init__(self, graphBoard):
+    def __init__(self, graphBoard: "Board"):
         Button.__init__(self)
         self.font_size = 80
         self.font_size = 150
