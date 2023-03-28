@@ -116,12 +116,12 @@ class Env():
     def __init__(self):
         self.screen = (800, 600)
         self.max_steps = 25000
-        self.model = self.make_model('python_proj/pong/pong_model.h5')
+        self.model = self.make_model('python_proj\pong\pong_model.h5')
         # self.model = self.make_model()
         self.memory = []
         # with open(f"pythong_proj/pong/memory1.pickle", "rb") as f:
         # self.memory = pickle.load(f)
-        with open(f"python_proj/pong/scaler.pickle", "rb") as f:
+        with open(f"python_proj\pong\scaler.pickle", "rb") as f:
             self.scaler = pickle.load(f)
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
         self.paddle2 = Paddle(100, 5, 750, 265, -1, self.screen)
@@ -289,6 +289,8 @@ class Env():
         elif self.check_win() == 2:
             self.paddle1.score += 1
             self.new_point()
+        self.paddle1.update_rect()
+        self.paddle2.update_rect()
 
     def predict_hit_y(self):
         ball1 = self.ball.copy()
@@ -383,9 +385,7 @@ def main():
         print(i)
     env.save_model()
     env.train_model()
-    # env.save_model()
-    # env.train_network()
-    # env.network_vs_player()
+    env.save_model()
 
 
 if __name__ == "__main__":
