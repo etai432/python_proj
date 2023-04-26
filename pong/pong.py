@@ -267,27 +267,27 @@ class Env():
             # generate the action of the model and play it
             act = np.argmax(self.model.predict_on_batch(norm_state)[0])
             self.paddle2.action(act)
-            if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
-                if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
-                    self.ball.change_speed()  # add the speed from the hit
-                    self.ball.hit_paddle(
-                        self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)  # change the angle of the ball
-                    # move the ball to the hit point with the paddle
-                    self.ball.posx = self.paddle1.posx + self.paddle1.width
-            if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
-                if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
-                    self.ball.change_speed()  # add the speed from the hit
-                    self.ball.hit_paddle(
-                        self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)  # change the angle of the ball
-                    # move the ball to the hit point with the paddle
-                    self.ball.posx = self.paddle2.posx - self.ball.radius
-            # check if someone won the point, start a new point if someone won
-            if self.check_win() == 0:
-                self.paddle2.score += 1
-                self.new_point()
-            elif self.check_win() == 2:
-                self.paddle1.score += 1
-                self.new_point()
+        if self.ball.posx >= self.paddle1.posx and self.ball.posx <= self.paddle1.posx + self.ball.speed:
+            if self.ball.posy >= self.paddle1.posy and self.ball.posy <= (self.paddle1.posy + self.paddle1.length):
+                self.ball.change_speed()  # add the speed from the hit
+                self.ball.hit_paddle(
+                    self.ball.posy - self.paddle1.posy + self.ball.radius//2, self.paddle1.length)  # change the angle of the ball
+                # move the ball to the hit point with the paddle
+                self.ball.posx = self.paddle1.posx + self.paddle1.width
+        if self.ball.posx + self.ball.radius - 1 >= self.paddle2.posx and self.ball.posx + self.ball.radius - 1 <= self.paddle2.posx + self.ball.speed:
+            if self.ball.posy >= self.paddle2.posy and self.ball.posy <= (self.paddle2.posy + self.paddle2.length):
+                self.ball.change_speed()  # add the speed from the hit
+                self.ball.hit_paddle(
+                    self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)  # change the angle of the ball
+                # move the ball to the hit point with the paddle
+                self.ball.posx = self.paddle2.posx - self.ball.radius
+        # check if someone won the point, start a new point if someone won
+        if self.check_win() == 0:
+            self.paddle2.score += 1
+            self.new_point()
+        elif self.check_win() == 2:
+            self.paddle1.score += 1
+            self.new_point()
         # update the hitboxes of the paddles
         self.paddle1.update_rect()
         self.paddle2.update_rect()
