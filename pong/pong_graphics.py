@@ -161,7 +161,7 @@ def draw(env, game_screen):
     pygame.display.flip()  # present the frame
 
 
-def display(game_screen, position, text, color=(255, 255, 255), size=50):
+def display(game_screen, position, text, color=(255, 255, 255), size=47):
     # the function gets a game screen from pygame, position and text
     # the function draws the text on the game screen
     # select the font of the text
@@ -178,15 +178,15 @@ def instructions(game_screen):
         0, 255, 0))  # draw the instructions title
     # draw the instructions
     display(game_screen, (0, 100),
-            "- Use the arrow keys or 'w' and 's' keys to move your paddle", size=25)
+            "- Use the arrow keys or 'w' and 's' keys to move your paddle", size=23)
     display(game_screen, (0, 150),
-            "- Try to bounce the ball past your opponent's paddle to score points", size=25)
+            "- Try to bounce the ball past your opponent's paddle to score points", size=23)
     display(game_screen, (0, 200),
-            "- The first player to reach 10 points wins the game", size=25)
+            "- The first player to reach 10 points wins the game", size=23)
     display(game_screen, (0, 250),
-            "- Press 'Esc' to exit the game at any time", size=25)
+            "- Press 'Esc' to exit the game at any time", size=23)
     display(game_screen, (0, 300),
-            "- When playing against AI, use the arrow keys only", size=25)
+            "- When playing against AI, use the arrow keys only", size=23)
     pygame.draw.rect(game_screen, (150, 150, 150), pygame.Rect(
         300, 400, 200, 100))  # the menu button
     display(game_screen, (340, 415), "menu",

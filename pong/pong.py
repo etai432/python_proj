@@ -143,12 +143,12 @@ class Env():
         self.screen = (800, 600)
         self.max_steps = 25000  # the max amount of frames a training game can last
         # the model that the ai uses
-        self.model = self.make_model('python_proj\pong\pong_model.h5')
+        self.model = self.make_model('python_proj/pong/pong_model.h5')
         # self.model = self.make_model()
         self.memory = []  # load the data to train the model on
         # with open(f"pythong_proj/pong/memory1.pickle", "rb") as f:
         # self.memory = pickle.load(f)
-        with open(f"python_proj\pong\scaler.pickle", "rb") as f:  # load the scaler of the model
+        with open(f"python_proj/pong/scaler.pickle", "rb") as f:  # load the scaler of the model
             self.scaler = pickle.load(f)
         # create the paddles
         self.paddle1 = Paddle(100, 5, 50, 265, 1, self.screen)
@@ -161,10 +161,10 @@ class Env():
     def check_win(self):
         # the function checks if someone won the point, returns 1 otherwise
         # check if the ball reached the left side of the screen
-        if self.ball.posx == self.ball.radius:
+        if self.ball.posx <= self.ball.radius:
             return 0
         # check if the ball reached the right side of the screen
-        if self.ball.posx == self.screen[0] - self.ball.radius:
+        if self.ball.posx >= self.screen[0] - self.ball.radius:
             return 2
         return 1
 
@@ -281,6 +281,9 @@ class Env():
                     self.ball.posy - self.paddle2.posy + self.ball.radius//2, self.paddle2.length)  # change the angle of the ball
                 # move the ball to the hit point with the paddle
                 self.ball.posx = self.paddle2.posx - self.ball.radius
+        # update the hitboxes of the paddles
+        self.paddle1.update_rect()
+        self.paddle2.update_rect()
         # check if someone won the point, start a new point if someone won
         if self.check_win() == 0:
             self.paddle2.score += 1
@@ -288,9 +291,6 @@ class Env():
         elif self.check_win() == 2:
             self.paddle1.score += 1
             self.new_point()
-        # update the hitboxes of the paddles
-        self.paddle1.update_rect()
-        self.paddle2.update_rect()
 
     def predict_hit_y(self):
         # the function returns the y position of the ball when it gets to the x position of the ai's paddle
